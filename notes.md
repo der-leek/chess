@@ -23,4 +23,24 @@
   - most useful for building strings in loops
 - Packages
   - a way to organize classes
-  - support subpackages
+  - support sub-packages
+
+## 9/17
+- Objects are instances of classes
+  - objects occupy memory at runtime, classes do not
+- Strings and arrays can both be created without the "new" keyword
+- Creation of a reference does not create an object
+- Reference equality vs. Object equality
+  - ==
+    - object -- memory address -- equality
+  - equals()
+    - performs identity comparison by default but can be overloaded
+  - Java has instance and static variables/methods
+    - static is like cls in python
+    - static methods are invoked by class name
+  - Use static vars to count pieces on each team?
+    - during the constructor?
+- All instance variables should be private
+  - getters/setters should be used for access
+- Inheritance
+  - constructors, static methods/fields, and private methods/fields are NOT inherited
