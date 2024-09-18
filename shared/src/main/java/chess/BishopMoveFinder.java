@@ -3,9 +3,13 @@ package chess;
 import java.util.Collection;
 import java.util.ArrayList;
 
-public class BishopMoveFinder extends pieceMovesFinder {
+public class BishopMoveFinder extends PieceMovesFinder {
 
     private Collection<ChessMove> validPositions = new ArrayList<>();
+    private final ChessGame.TeamColor currentTeam;
+    private final ChessPosition myPosition;
+    private final ChessBoard board;
+
     private int directions[][] = {
         {1, 1},
         {1, -1},
@@ -13,46 +17,46 @@ public class BishopMoveFinder extends pieceMovesFinder {
         {-1, 1}
     };
 
-    public BishopMoveFinder() {
+    public BishopMoveFinder(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor currentTeam) {
         super();
+        this.board = board;
+        this.myPosition = myPosition;
+        this.currentTeam = currentTeam;
     }
 
-    /**
-     * @param board
-     * @param myPosition
-     * @param currentTeam
-     * @return validPositions
-     */
-    public Collection<ChessMove> findBishopMoves(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor currentTeam) {
-
+    public Collection<ChessMove> findBishopMoves() {
         for (int[] direction : directions) {
             ChessPosition newPosition = new ChessPosition(
                 myPosition.getRow() + direction[0],
                 myPosition.getColumn() + direction[1]
             );
 
-            while (positionAvailable(board, newPosition, currentTeam)) {
+            while (newPosition.inBounds()) {
                 ChessMove move = new ChessMove(myPosition, newPosition, null);
-                validPositions.add(move);
-                newPosition = new ChessPosition(
-                    newPosition.getRow() + direction[0],
-                    newPosition.getColumn() + direction[1]
-                );
+                ChessPiece targetPiece = board.getPiece(newPosition);
+
+                if (isNull(targetPiece)) {
+                    validPositions.add(move);
+                    newPosition = new ChessPosition(
+                        newPosition.getRow() + direction[0],
+                        newPosition.getColumn() + direction[1]
+                    );
+                } else if (isEnemyPosition(targetPiece, currentTeam)) {
+                    validPositions.add(move);
+                    break;
+                } else { // is friendly position
+                    break;
+                }
             }
         }
-
         return validPositions;
     }
 
     public static void main(String[] args) {
-        BishopMoveFinder finder = new BishopMoveFinder();
         ChessBoard board = new ChessBoard();
         ChessPosition myPosition = new ChessPosition(2, 3);
-        Collection<ChessMove> validPostions = finder.findBishopMoves(board, myPosition, ChessGame.TeamColor.BLACK);
+        BishopMoveFinder finder = new BishopMoveFinder(board, myPosition, ChessGame.TeamColor.BLACK);
+        Collection<ChessMove> validPostions = finder.findBishopMoves();
         System.out.println(validPostions);
     }
-
 }
-
- // Bishop
-    // can move any number of spaces diagonally
