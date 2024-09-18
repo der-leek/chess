@@ -3,7 +3,7 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 
-public class BishopMoveFinder extends PieceMovesFinder {
+public class RookMoveFinder extends PieceMovesFinder {
 
     private Collection<ChessMove> validPositions = new HashSet<>();
     private final ChessGame.TeamColor currentTeam;
@@ -11,20 +11,20 @@ public class BishopMoveFinder extends PieceMovesFinder {
     private final ChessBoard board;
 
     private int directions[][] = {
-        {1, 1},
-        {1, -1},
-        {-1, -1},
-        {-1, 1}
+        {1, 0},
+        {-1, 0},
+        {0, 1},
+        {0, -1}
     };
 
-    public BishopMoveFinder(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor currentTeam) {
+    public RookMoveFinder(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor currentTeam) {
         super();
         this.board = board;
         this.myPosition = myPosition;
         this.currentTeam = currentTeam;
     }
 
-    public Collection<ChessMove> findBishopMoves() {
+    public Collection<ChessMove> findRookMoves() {
         for (int[] direction : directions) {
             ChessPosition newPosition = new ChessPosition(
                 myPosition.getRow() + direction[0],

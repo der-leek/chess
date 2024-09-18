@@ -60,19 +60,19 @@ public class ChessBoard {
 
             addPiece(
                 new ChessPosition(1, col),
-                new ChessPiece(ChessGame.TeamColor.BLACK, entry.getValue())
+                new ChessPiece(ChessGame.TeamColor.WHITE, entry.getValue())
             );
             addPiece(
                 new ChessPosition(2, col),
-                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN)
+                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN)
             );
             addPiece(
                 new ChessPosition(7, col),
-                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN)
+                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN)
                 );
             addPiece(
                 new ChessPosition(8, col),
-                new ChessPiece(ChessGame.TeamColor.WHITE, entry.getValue())
+                new ChessPiece(ChessGame.TeamColor.BLACK, entry.getValue())
                 );
         }
     }
@@ -86,7 +86,7 @@ public class ChessBoard {
     }
 
     @Override
-    public boolean equals(Object obj) { // FIXME:
+    public boolean equals(Object obj) {
         if (this == obj)
             return true;
         if (obj == null)
@@ -94,13 +94,8 @@ public class ChessBoard {
         if (getClass() != obj.getClass())
             return false;
         ChessBoard other = (ChessBoard) obj;
-        for (int row=0; row < boardLength; row++) {
-            for (int col=0; col < boardLength; col++) {
-                if (!squares[row][col].equals(other.squares[row][col])) {
-                    return false;
-                }
-            }
-        }
+        if (!Arrays.deepEquals(squares, other.squares))
+            return false;
         return true;
     }
 

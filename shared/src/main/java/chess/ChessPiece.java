@@ -53,10 +53,27 @@ public class ChessPiece {
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         switch (type) {
             case BISHOP:
-                BishopMoveFinder finder = new BishopMoveFinder();
-                Collection<ChessMove> validPostions = finder.findBishopMoves(board, myPosition, pieceColor);
-                return validPostions;
-
+                BishopMoveFinder bishopFinder = new BishopMoveFinder(board, myPosition, pieceColor);
+                Collection<ChessMove> bishopPositions = bishopFinder.findBishopMoves();
+                return bishopPositions;
+            case ROOK:
+                RookMoveFinder rookFinder = new RookMoveFinder(board, myPosition, pieceColor);
+                Collection<ChessMove> rookPositions = rookFinder.findRookMoves();
+                return rookPositions;
+            case QUEEN:
+                QueenMoveFinder queenFinder = new QueenMoveFinder(board, myPosition, pieceColor);
+                Collection<ChessMove> queenPositions = queenFinder.findQueenMoves();
+                return queenPositions;
+            case KING:
+                KingMoveFinder kingFinder = new KingMoveFinder(board, myPosition, pieceColor);
+                Collection<ChessMove> kingPositions = kingFinder.findKingMoves();
+                return kingPositions;
+            case KNIGHT:
+                KnightMoveFinder knightFinder = new KnightMoveFinder(board, myPosition, pieceColor);
+                Collection<ChessMove> knightPositions = knightFinder.findKnightMoves();
+                return knightPositions;
+            case PAWN:
+                
             default:
                 return null;
         }
