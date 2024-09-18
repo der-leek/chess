@@ -51,7 +51,15 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        throw new RuntimeException("Not implemented");
+        switch (type) {
+            case BISHOP:
+                BishopMoveFinder finder = new BishopMoveFinder();
+                Collection<ChessMove> validPostions = finder.findBishopMoves(board, myPosition, pieceColor);
+                return validPostions;
+
+            default:
+                return null;
+        }
     }
 
     @Override
