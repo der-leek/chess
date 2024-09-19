@@ -52,12 +52,4 @@ public class KingMoveFinder extends PieceMovesFinder {
         }
         return validPositions;
     }
-
-    public static void main(String[] args) {
-        ChessBoard board = new ChessBoard();
-        ChessPosition myPosition = new ChessPosition(8, 8);
-        KingMoveFinder finder = new KingMoveFinder(board, myPosition, ChessGame.TeamColor.BLACK);
-        Collection<ChessMove> validPostions = finder.findKingMoves();
-        System.out.println(validPostions);
-    }
 }

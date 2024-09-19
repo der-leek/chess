@@ -73,7 +73,9 @@ public class ChessPiece {
                 Collection<ChessMove> knightPositions = knightFinder.findKnightMoves();
                 return knightPositions;
             case PAWN:
-                
+                PawnMoveFinder pawnFinder = new PawnMoveFinder(board, myPosition, pieceColor);
+                Collection<ChessMove> pawnPositions = pawnFinder.findPawnMoves();
+                return pawnPositions;
             default:
                 return null;
         }
