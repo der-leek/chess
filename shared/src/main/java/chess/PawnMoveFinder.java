@@ -76,19 +76,22 @@ public class PawnMoveFinder extends PieceMovesFinder {
 
     private void defineFirstMove(ChessPosition myPosition) {
         ChessPiece oneForward = board.getPiece(
-            new ChessPosition(myPosition.getRow() + forward, myPosition.getColumn())
+            new ChessPosition(
+                myPosition.getRow() + forward,
+                myPosition.getColumn()
+            )
         );
         boolean firstWhiteMove = (currentTeam == ChessGame.TeamColor.WHITE & myPosition.getRow() == 2);
         boolean firstBlackMove = (currentTeam == ChessGame.TeamColor.BLACK & myPosition.getRow() == 7);
         boolean firstMoveClear = (oneForward == null);
-        if ((firstWhiteMove | firstBlackMove) & firstMoveClear) { // and if the spot ahead is unblocked
+        if ((firstWhiteMove | firstBlackMove) & firstMoveClear) {
             int[] firstMove = {2*forward, 0};
             directions.add(firstMove);
         }
     }
 
-    private void determinePromotion(ChessPosition myPosition) {
-        if (myPosition.getRow() == 1 | myPosition.getRow() == 8) {
+    private void determinePromotion(ChessPosition newPosition) {
+        if (newPosition.getRow() == 1 | newPosition.getRow() == 8) {
             canPromote = true;
         }
     }
