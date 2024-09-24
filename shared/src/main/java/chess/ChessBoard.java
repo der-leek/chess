@@ -101,6 +101,18 @@ public class ChessBoard {
 
     @Override
     public String toString() {
-        return "ChessBoard [squares=" + Arrays.toString(squares) + "]";
+        StringBuilder board = new StringBuilder();
+        String pipe = "|";
+        String space = " ";
+
+        for (int i = boardLength-1; i >= 0; i--) {
+            board.append(pipe);
+            for (ChessPiece piece : squares[i]) {
+                String pieceString = (piece != null ? piece.toString() : space);
+                board.append(pieceString).append(pipe);
+            }
+            board.append("\n");
+        }
+        return board.toString();
     }
 }

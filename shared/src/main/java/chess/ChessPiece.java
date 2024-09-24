@@ -1,6 +1,7 @@
 package chess;
 
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Represents a single chess piece
@@ -11,6 +12,14 @@ import java.util.Collection;
 public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final ChessPiece.PieceType type;
+    private final Map<PieceType, String> pieces = Map.of(
+        PieceType.KING, "K",
+        PieceType.QUEEN, "Q",
+        PieceType.BISHOP, "B",
+        PieceType.KNIGHT, "N",
+        PieceType.ROOK, "R",
+        PieceType.PAWN, "P"
+    );
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
@@ -108,6 +117,10 @@ public class ChessPiece {
 
     @Override
     public String toString() {
-        return "ChessPiece [pieceColor=" + pieceColor + ", type=" + type + "]";
+        if (pieceColor == ChessGame.TeamColor.BLACK) {
+            return pieces.get(type).toLowerCase();
+        } else {
+            return pieces.get(type);
+        }
     }
 }
