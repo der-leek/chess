@@ -44,3 +44,17 @@
   - getters/setters should be used for access
 - Inheritance
   - constructors, static methods/fields, and private methods/fields are NOT inherited
+
+## 9/26
+- LOOK FOR WAYS TO USE ANONYMOUS INNER CLASSES TO KEEP DECLARATIONS CLOSE TO USE
+
+### Design Principles
+1. Design is inherently iterative
+     - Design, implement, test, repeat...
+2. Abstraction
+     - Abstractions are represented by higher-level classes
+3. Good naming
+4. Single Responsibility/Cohesion
+5. Decomposition
+     - Break large problems into a collection of very simple ones
+6. 

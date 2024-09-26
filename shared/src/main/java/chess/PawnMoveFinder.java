@@ -21,7 +21,7 @@ public class PawnMoveFinder extends PieceMovesFinder {
     };
 
     public PawnMoveFinder(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor currentTeam) {
-        super();
+        super(board, myPosition, currentTeam);
         this.board = board;
         this.myPosition = myPosition;
         this.currentTeam = currentTeam;
