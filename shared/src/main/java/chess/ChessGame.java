@@ -31,7 +31,11 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        teamTurn = team;
+        if (team == TeamColor.WHITE) {
+            teamTurn = TeamColor.BLACK;
+        } else {
+            teamTurn = TeamColor.WHITE;
+        }
     }
 
     /**
@@ -50,7 +54,20 @@ public class ChessGame {
      * startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
-        throw new RuntimeException("Not implemented");
+        ChessPiece piece = board.getPiece(startPosition);
+        Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
+
+        for (ChessMove move : moves) {
+            // TODO: UNFINISHED
+            // clone board
+            // make move
+
+            if (isInCheck(teamTurn)) {
+                moves.remove(move);
+            }
+        }
+
+        return moves;
     }
 
     /**
@@ -60,16 +77,28 @@ public class ChessGame {
      * @throws InvalidMoveException if move is invalid
      */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        // get piece from start position
-        // set that piece to end position
-        // clear start position
-        // include pawn promotion
-            // if promotion is not null,
-        if (teamTurn == TeamColor.WHITE) {
-            setTeamTurn(TeamColor.BLACK);
-        } else {
-            setTeamTurn(TeamColor.WHITE);
+        ChessPiece.PieceType promotionPiece = move.getPromotionPiece();
+        ChessPosition startPosition = move.getStartPosition();
+        ChessPosition endPosition = move.getEndPosition();
+
+        ChessPiece piece = board.getPiece(startPosition);
+        TeamColor pieceColor = piece.getTeamColor();
+
+        boolean nullPiece = (piece == null);
+        boolean invalidMove = (!validMoves(startPosition).contains(move));
+        boolean wrongTurn = (pieceColor != teamTurn);
+
+        if (nullPiece | invalidMove | wrongTurn) {
+            throw new InvalidMoveException();
         }
+
+        if (promotionPiece != null) {
+            piece = new ChessPiece(teamTurn, promotionPiece);
+        }
+
+        board.addPiece(endPosition, piece);
+        board.addPiece(startPosition, null);
+        setTeamTurn(pieceColor);
     }
 
     /**
@@ -79,9 +108,14 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        // implement clone
         // START HERE
-        throw new RuntimeException("Not implemented");
+        // clone board
+        // compose all valid moves into one set for opposing team
+        // get king position
+        // for every move
+            // if endPosition is the same as the king's
+                // return true
+        return false;
     }
 
     /**
@@ -91,8 +125,13 @@ public class ChessGame {
      * @return True if the specified team is in checkmate
      */
     public boolean isInCheckmate(TeamColor teamColor) {
-        // implement clone
-        throw new RuntimeException("Not implemented");
+        // clone board
+        // compose all valid moves into one set for current team
+        // for every move
+            // make move
+            // if not in check
+                // return false
+        return true;
     }
 
     /**
