@@ -1,5 +1,6 @@
 package chess;
 
+import chess.move_finders.*;
 import java.util.Collection;
 import java.util.Map;
 
@@ -63,22 +64,22 @@ public class ChessPiece {
         switch (type) {
             case BISHOP:
                 BishopMoveFinder bishopFinder = new BishopMoveFinder(board, myPosition, pieceColor);
-                return bishopFinder.findBishopMoves();
+                return bishopFinder.getMoves();
             case ROOK:
                 RookMoveFinder rookFinder = new RookMoveFinder(board, myPosition, pieceColor);
-                return rookFinder.findRookMoves();
+                return rookFinder.getMoves();
             case QUEEN:
                 QueenMoveFinder queenFinder = new QueenMoveFinder(board, myPosition, pieceColor);
-                return queenFinder.findQueenMoves();
+                return queenFinder.getMoves();
             case KING:
                 KingMoveFinder kingFinder = new KingMoveFinder(board, myPosition, pieceColor);
-                return kingFinder.findKingMoves();
+                return kingFinder.getMoves();
             case KNIGHT:
                 KnightMoveFinder knightFinder = new KnightMoveFinder(board, myPosition, pieceColor);
-                return knightFinder.findKnightMoves();
+                return knightFinder.getMoves();
             case PAWN:
                 PawnMoveFinder pawnFinder = new PawnMoveFinder(board, myPosition, pieceColor);
-                return pawnFinder.findPawnMoves();
+                return pawnFinder.getMoves();
             default:
                 return null;
         }
