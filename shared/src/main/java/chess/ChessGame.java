@@ -17,7 +17,7 @@ public class ChessGame {
     public ChessGame() {
         board.resetBoard();
         setTeamTurn(TeamColor.WHITE);
-        teamPositions = new TeamPositions();
+        teamPositions = new TeamPositions(board);
     }
 
     /**
@@ -102,7 +102,7 @@ public class ChessGame {
         board.addPiece(endPosition, piece);
         board.removePiece(startPosition);
         setTeamTurn(getTeamTurn().toggle());
-        // update position sets
+        teamPositions.refreshPositions(board);
     }
 
     /**
@@ -112,12 +112,13 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        // START HERE
-
-        // get king position
-        // for every move
-            // if endPosition is the same as the king's
-                // return true
+        ChessPosition kingPosition = teamPositions.getKingPosition(teamColor);
+        for (ChessPosition position : teamPositions.getEnemyPositions(teamColor))
+            for (ChessMove move : validMoves(position)) {
+                if (move.getEndPosition().equals(kingPosition)) {
+                    return true;
+                }
+            }
         return false;
     }
 
@@ -163,6 +164,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
+        teamPositions = new TeamPositions(board);
         this.board = board;
     }
 
