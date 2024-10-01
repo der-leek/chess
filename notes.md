@@ -57,4 +57,8 @@
 4. Single Responsibility/Cohesion
 5. Decomposition
      - Break large problems into a collection of very simple ones
-6. 
+6. Algorithm & Data Structure Selection
+     - No amount of decomposition or abstraction will hide a fundamentally flawed selection of algorithm or data structure
+7. Low Coupling
+8. Encapsulation / Information Hiding
+9. Avoid code duplication
