@@ -9,11 +9,13 @@ import java.util.Map;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessBoard {
+public class ChessBoard implements Cloneable {
     private final int boardLength = 8;
-    private ChessPiece squares[][] = new ChessPiece[boardLength][boardLength];
+    private ChessPiece squares[][];
 
-    public ChessBoard() {}
+    public ChessBoard() {
+        squares = new ChessPiece[boardLength][boardLength];
+    }
 
     /**
      * Adds a chess piece to the chessboard
@@ -110,18 +112,33 @@ public class ChessBoard {
 
     @Override
     public String toString() {
-        StringBuilder board = new StringBuilder();
+        StringBuilder boardStringBuilder = new StringBuilder();
         String pipe = "|";
         String space = " ";
 
         for (int i = boardLength-1; i >= 0; i--) {
-            board.append(pipe);
+            boardStringBuilder.append(pipe);
             for (ChessPiece piece : squares[i]) {
                 String pieceString = (piece != null ? piece.toString() : space);
-                board.append(pieceString).append(pipe);
+                boardStringBuilder.append(pieceString).append(pipe);
             }
-            board.append("\n");
+            boardStringBuilder.append("\n");
         }
-        return board.toString();
+        return boardStringBuilder.toString();
+    }
+
+    @Override
+    public ChessBoard clone() throws CloneNotSupportedException {
+        ChessBoard boardClone = (ChessBoard) super.clone();
+        boardClone.squares = new ChessPiece[boardLength][boardLength];
+
+        for (int i = 0; i < boardLength; i++) {
+            for (int j = 0; j < boardLength; j++) {
+                if (this.squares[i][j] != null) {
+                    boardClone.squares[i][j] = this.squares[i][j].clone();
+                }
+            }
+        }
+        return boardClone;
     }
 }

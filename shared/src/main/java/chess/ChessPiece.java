@@ -10,7 +10,7 @@ import java.util.Map;
  * Note: You can add to this class, but you may not alter
  * signature of the existing methods.
  */
-public class ChessPiece {
+public class ChessPiece implements Cloneable {
     private final ChessGame.TeamColor pieceColor;
     private final ChessPiece.PieceType type;
     private final Map<PieceType, String> pieces = Map.of(
@@ -117,5 +117,10 @@ public class ChessPiece {
         } else {
             return pieces.get(type);
         }
+    }
+
+    @Override
+    public ChessPiece clone() throws CloneNotSupportedException {
+        return (ChessPiece) super.clone();
     }
 }

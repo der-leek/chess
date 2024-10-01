@@ -54,16 +54,22 @@ public class PawnMoveFinder extends PositionChecker {
     }
 
     private void defineFirstMove(ChessPosition myPosition) {
+        boolean firstWhiteMove = (currentTeam == ChessGame.TeamColor.WHITE & myPosition.getRow() == 2);
+        boolean firstBlackMove = (currentTeam == ChessGame.TeamColor.BLACK & myPosition.getRow() == 7);
+
+        if ((!firstWhiteMove & !firstBlackMove)) {
+            return;
+        }
+
         ChessPiece oneForward = board.getPiece(
             new ChessPosition(
                 myPosition.getRow() + forward,
                 myPosition.getColumn()
             )
         );
-        boolean firstWhiteMove = (currentTeam == ChessGame.TeamColor.WHITE & myPosition.getRow() == 2);
-        boolean firstBlackMove = (currentTeam == ChessGame.TeamColor.BLACK & myPosition.getRow() == 7);
+
         boolean firstMoveClear = (oneForward == null);
-        if ((firstWhiteMove | firstBlackMove) & firstMoveClear) {
+        if (firstMoveClear) {
             int[] firstMove = {2*forward, 0};
             directions.add(firstMove);
         }
