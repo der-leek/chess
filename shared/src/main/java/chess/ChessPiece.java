@@ -120,7 +120,11 @@ public class ChessPiece implements Cloneable {
     }
 
     @Override
-    public ChessPiece clone() throws CloneNotSupportedException {
-        return (ChessPiece) super.clone();
+    public ChessPiece clone() {
+        try {
+            return (ChessPiece) super.clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 }

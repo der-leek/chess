@@ -12,12 +12,12 @@ public class TeamPositions {
     private ChessPosition blackKingPosition;
 
     public TeamPositions(ChessBoard board) {
-        whitePositions = new HashSet<ChessPosition>();
-        blackPositions = new HashSet<ChessPosition>();
         refreshPositions(board);
     }
 
     public void refreshPositions(ChessBoard board) {
+        whitePositions = new HashSet<ChessPosition>();
+        blackPositions = new HashSet<ChessPosition>();
         for (int i=1; i<=8; i++) {
             for (int j=1; j<=8; j++) {
                 ChessPosition position = new ChessPosition(i, j);
