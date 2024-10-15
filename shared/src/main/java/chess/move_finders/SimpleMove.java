@@ -9,19 +9,12 @@ public abstract class SimpleMove extends PositionChecker {
         super();
     }
 
-    public void findSimpleMoves(
-        int[][] directions,
-        Collection<ChessMove> validPositions,
-        ChessBoard board,
-        ChessPosition myPosition,
-        ChessGame.TeamColor currentTeam
-        ) {
+    public void findSimpleMoves(int[][] directions, ChessBoard board, ChessPosition myPosition,
+            ChessGame.TeamColor currentTeam, Collection<ChessMove> validPositions) {
 
         for (int[] direction : directions) {
-            ChessPosition newPosition = new ChessPosition(
-                myPosition.getRow() + direction[0],
-                myPosition.getColumn() + direction[1]
-            );
+            ChessPosition newPosition = new ChessPosition(myPosition.getRow() + direction[0],
+                    myPosition.getColumn() + direction[1]);
 
             if (!newPosition.inBounds()) {
                 continue;

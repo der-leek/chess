@@ -9,19 +9,12 @@ public class ExtendedMove extends PositionChecker {
         super();
     }
 
-    public void findLoopedMoves(
-        int[][] directions,
-        Collection<ChessMove> validPositions,
-        ChessBoard board,
-        ChessPosition myPosition,
-        ChessGame.TeamColor currentTeam
-        ) {
+    public void findLoopedMoves(int[][] directions, ChessBoard board, ChessPosition myPosition,
+            ChessGame.TeamColor currentTeam, Collection<ChessMove> validPositions) {
 
         for (int[] direction : directions) {
-            ChessPosition newPosition = new ChessPosition(
-                myPosition.getRow() + direction[0],
-                myPosition.getColumn() + direction[1]
-            );
+            ChessPosition newPosition = new ChessPosition(myPosition.getRow() + direction[0],
+                    myPosition.getColumn() + direction[1]);
 
             while (newPosition.inBounds()) {
                 ChessMove move = new ChessMove(myPosition, newPosition, null);
@@ -29,10 +22,8 @@ public class ExtendedMove extends PositionChecker {
 
                 if (isNull(targetPiece)) {
                     validPositions.add(move);
-                    newPosition = new ChessPosition(
-                        newPosition.getRow() + direction[0],
-                        newPosition.getColumn() + direction[1]
-                    );
+                    newPosition = new ChessPosition(newPosition.getRow() + direction[0],
+                            newPosition.getColumn() + direction[1]);
                 } else if (isEnemyPosition(targetPiece, currentTeam)) {
                     validPositions.add(move);
                     break;

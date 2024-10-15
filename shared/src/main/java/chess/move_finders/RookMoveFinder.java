@@ -10,20 +10,16 @@ import chess.ChessPosition;
 
 public class RookMoveFinder extends ExtendedMove {
 
-    private Collection<ChessMove> mvoes = new HashSet<>();
-    private int directions[][] = {
-        {1, 0},
-        {-1, 0},
-        {0, 1},
-        {0, -1}
-    };
+    private Collection<ChessMove> moves = new HashSet<>();
+    private int directions[][] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
 
-    public RookMoveFinder(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor currentTeam) {
+    public RookMoveFinder(ChessBoard board, ChessPosition myPosition,
+            ChessGame.TeamColor currentTeam) {
         super();
-        findLoopedMoves(directions, mvoes, board, myPosition, currentTeam);
+        findLoopedMoves(directions, board, myPosition, currentTeam, moves);
     }
 
     public Collection<ChessMove> getMoves() {
-        return mvoes;
+        return moves;
     }
 }

@@ -62,3 +62,16 @@
 7. Low Coupling
 8. Encapsulation / Information Hiding
 9. Avoid code duplication
+
+## 10/15
+### Principles of Quality Code
+1. Exhibits strong cohesion
+2. Uses descriptive method names
+3. Decomposes algorithms
+4. Contains self-commenting code
+5. Avoids deep nesting
+6. Uses parameters wisely
+   1. Uses all parameters
+   2. Sorts by input first output last
+   3. Uses fewer than 8 parameters
+7. Whitespace enhances readability

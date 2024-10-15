@@ -18,8 +18,8 @@ public class TeamPositions {
     public void refreshPositions(ChessBoard board) {
         whitePositions = new HashSet<ChessPosition>();
         blackPositions = new HashSet<ChessPosition>();
-        for (int i=1; i<=8; i++) {
-            for (int j=1; j<=8; j++) {
+        for (int i = 1; i <= 8; i++) {
+            for (int j = 1; j <= 8; j++) {
                 ChessPosition position = new ChessPosition(i, j);
                 ChessPiece piece = board.getPiece(position);
                 if (piece == null) {
@@ -50,6 +50,7 @@ public class TeamPositions {
             this.blackKingPosition = kingPosition;
         }
     }
+
     public Collection<ChessPosition> getFriendlyPositions(ChessGame.TeamColor teamColor) {
         return (teamColor == TeamColor.WHITE ? whitePositions : blackPositions);
     }
