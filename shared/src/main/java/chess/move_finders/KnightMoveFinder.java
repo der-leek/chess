@@ -11,20 +11,13 @@ import chess.ChessPosition;
 public class KnightMoveFinder extends SimpleMove {
 
     private Collection<ChessMove> moves = new HashSet<>();
-    private int directions[][] = {
-        {2, 1},
-        {1, 2},
-        {-1, 2},
-        {-2, 1},
-        {-2, -1},
-        {-1, -2},
-        {1, -2},
-        {2, -1},
-    };
+    private int directions[][] =
+            {{2, 1}, {1, 2}, {-1, 2}, {-2, 1}, {-2, -1}, {-1, -2}, {1, -2}, {2, -1},};
 
-    public KnightMoveFinder(ChessBoard board, ChessPosition myPosition, ChessGame.TeamColor currentTeam) {
+    public KnightMoveFinder(ChessBoard board, ChessPosition myPosition,
+            ChessGame.TeamColor currentTeam) {
         super();
-        findSimpleMoves(directions, moves, board, myPosition, currentTeam);
+        findSimpleMoves(directions, board, myPosition, currentTeam, moves);
     }
 
     public Collection<ChessMove> getMoves() {

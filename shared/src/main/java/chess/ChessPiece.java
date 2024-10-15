@@ -7,20 +7,13 @@ import java.util.Map;
 /**
  * Represents a single chess piece
  * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
+ * Note: You can add to this class, but you may not alter signature of the existing methods.
  */
 public class ChessPiece implements Cloneable {
     private final ChessGame.TeamColor pieceColor;
     private final ChessPiece.PieceType type;
-    private final Map<PieceType, String> pieces = Map.of(
-        PieceType.KING, "K",
-        PieceType.QUEEN, "Q",
-        PieceType.BISHOP, "B",
-        PieceType.KNIGHT, "N",
-        PieceType.ROOK, "R",
-        PieceType.PAWN, "P"
-    );
+    private final Map<PieceType, String> pieces = Map.of(PieceType.KING, "K", PieceType.QUEEN, "Q",
+            PieceType.BISHOP, "B", PieceType.KNIGHT, "N", PieceType.ROOK, "R", PieceType.PAWN, "P");
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
@@ -31,12 +24,7 @@ public class ChessPiece implements Cloneable {
      * The various different chess piece options
      */
     public enum PieceType {
-        KING,
-        QUEEN,
-        BISHOP,
-        KNIGHT,
-        ROOK,
-        PAWN
+        KING, QUEEN, BISHOP, KNIGHT, ROOK, PAWN
     }
 
     /**
@@ -54,9 +42,8 @@ public class ChessPiece implements Cloneable {
     }
 
     /**
-     * Calculates all the positions a chess piece can move to
-     * Does not take into account moves that are illegal due to leaving the king in
-     * danger
+     * Calculates all the positions a chess piece can move to Does not take into account moves that
+     * are illegal due to leaving the king in danger
      *
      * @return Collection of valid moves
      */

@@ -6,8 +6,7 @@ import java.util.Map;
 /**
  * A chessboard that can hold and rearrange chess pieces.
  * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
+ * Note: You can add to this class, but you may not alter signature of the existing methods.
  */
 public class ChessBoard implements Cloneable {
     private final int boardLength = 8;
@@ -18,14 +17,13 @@ public class ChessBoard implements Cloneable {
     }
 
     /**
-     * Adds a chess piece to the chessboard
-     * Adds that piece's position to its teams Set of positions
+     * Adds a chess piece to the chessboard Adds that piece's position to its teams Set of positions
      *
      * @param position where to add the piece to
-     * @param piece    the piece to add
+     * @param piece the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        squares[position.getRow()-1][position.getColumn()-1] = piece;
+        squares[position.getRow() - 1][position.getColumn() - 1] = piece;
     }
 
     /**
@@ -34,57 +32,42 @@ public class ChessBoard implements Cloneable {
      * @param position whice position to remove
      */
     public void removePiece(ChessPosition position) {
-        squares[position.getRow()-1][position.getColumn()-1] = null;
+        squares[position.getRow() - 1][position.getColumn() - 1] = null;
     }
 
     /**
      * Gets a chess piece on the chessboard
      *
      * @param position The position to get the piece from
-     * @return Either the piece at the position, or null if no piece is at that
-     * position
+     * @return Either the piece at the position, or null if no piece is at that position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return squares[position.getRow()-1][position.getColumn()-1];
+        return squares[position.getRow() - 1][position.getColumn() - 1];
     }
 
     /**
-     * Sets the board to the default starting board
-     * (How the game of chess normally starts)
+     * Sets the board to the default starting board (How the game of chess normally starts)
      */
     public void resetBoard() {
         squares = new ChessPiece[boardLength][boardLength];
 
-        Map<Integer, ChessPiece.PieceType> boardStructure = Map.of(
-            1, ChessPiece.PieceType.ROOK,
-            2, ChessPiece.PieceType.KNIGHT,
-            3, ChessPiece.PieceType.BISHOP,
-            4, ChessPiece.PieceType.QUEEN,
-            5, ChessPiece.PieceType.KING,
-            6, ChessPiece.PieceType.BISHOP,
-            7, ChessPiece.PieceType.KNIGHT,
-            8, ChessPiece.PieceType.ROOK
-        );
+        Map<Integer, ChessPiece.PieceType> boardStructure =
+                Map.of(1, ChessPiece.PieceType.ROOK, 2, ChessPiece.PieceType.KNIGHT, 3,
+                        ChessPiece.PieceType.BISHOP, 4, ChessPiece.PieceType.QUEEN, 5,
+                        ChessPiece.PieceType.KING, 6, ChessPiece.PieceType.BISHOP, 7,
+                        ChessPiece.PieceType.KNIGHT, 8, ChessPiece.PieceType.ROOK);
 
         for (Map.Entry<Integer, ChessPiece.PieceType> entry : boardStructure.entrySet()) {
             int col = entry.getKey();
 
-            addPiece(
-                new ChessPosition(1, col),
-                new ChessPiece(ChessGame.TeamColor.WHITE, entry.getValue())
-            );
-            addPiece(
-                new ChessPosition(2, col),
-                new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN)
-            );
-            addPiece(
-                new ChessPosition(7, col),
-                new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN)
-                );
-            addPiece(
-                new ChessPosition(8, col),
-                new ChessPiece(ChessGame.TeamColor.BLACK, entry.getValue())
-                );
+            addPiece(new ChessPosition(1, col),
+                    new ChessPiece(ChessGame.TeamColor.WHITE, entry.getValue()));
+            addPiece(new ChessPosition(2, col),
+                    new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+            addPiece(new ChessPosition(7, col),
+                    new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+            addPiece(new ChessPosition(8, col),
+                    new ChessPiece(ChessGame.TeamColor.BLACK, entry.getValue()));
         }
     }
 
@@ -116,7 +99,7 @@ public class ChessBoard implements Cloneable {
         String pipe = "|";
         String space = " ";
 
-        for (int i = boardLength-1; i >= 0; i--) {
+        for (int i = boardLength - 1; i >= 0; i--) {
             boardStringBuilder.append(pipe);
             for (ChessPiece piece : squares[i]) {
                 String pieceString = (piece != null ? piece.toString() : space);

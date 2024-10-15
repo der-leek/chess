@@ -6,8 +6,7 @@ import java.util.HashSet;
 /**
  * For a class that can manage a chess game, making moves on a board
  * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
+ * Note: You can add to this class, but you may not alter signature of the existing methods.
  */
 public class ChessGame {
 
@@ -42,8 +41,7 @@ public class ChessGame {
      * Enum identifying the 2 possible teams in a chess game
      */
     public enum TeamColor {
-        WHITE,
-        BLACK;
+        WHITE, BLACK;
 
         private TeamColor toggle() {
             return this == WHITE ? BLACK : WHITE;
@@ -52,6 +50,7 @@ public class ChessGame {
 
     /**
      * Executes a move on the board.
+     * 
      * @param board The chess board.
      * @param piece The piece to move.
      * @param move The move to execute.
@@ -65,8 +64,7 @@ public class ChessGame {
      * Gets a valid moves for a piece at the given location
      *
      * @param startPosition the piece to get valid moves for
-     * @return Set of valid moves for requested piece, or null if no piece at
-     * startPosition
+     * @return Set of valid moves for requested piece, or null if no piece at startPosition
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
@@ -84,7 +82,8 @@ public class ChessGame {
             TeamPositions clonedPositions = new TeamPositions(boardClone);
 
             ChessPosition kingPosition = clonedPositions.getKingPosition(pieceClone.getTeamColor());
-            Collection<ChessPosition> enemyPositions = clonedPositions.getEnemyPositions(pieceClone.getTeamColor());
+            Collection<ChessPosition> enemyPositions =
+                    clonedPositions.getEnemyPositions(pieceClone.getTeamColor());
 
             for (ChessPosition position : enemyPositions) {
                 ChessPiece enemyPiece = boardClone.getPiece(position);
@@ -142,6 +141,7 @@ public class ChessGame {
 
     /**
      * Determines if the given team is in check using the provided TeamPositions.
+     * 
      * @param teamColor The team color to check.
      * @param positions The TeamPositions to use for checking.
      * @return True if the specified team is in check, false otherwise.
@@ -186,8 +186,7 @@ public class ChessGame {
     }
 
     /**
-     * Determines if the given team is in stalemate, which here is defined as having
-     * no valid moves
+     * Determines if the given team is in stalemate, which here is defined as having no valid moves
      *
      * @param teamColor which team to check for stalemate
      * @return True if the specified team is in stalemate, otherwise false
