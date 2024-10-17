@@ -13,9 +13,9 @@ Handler -> Service: register(RegisterRequest)
 Service -> DataAccess: getUser(username)
 DataAccess -> db: Find UserData by username
 DataAccess --> Service: null
-Service -> DataAccess:createUser(userData)
+Service -> DataAccess:createUser(UserData)
 DataAccess -> db: Add UserData
-Service -> DataAccess:createAuth(authData)
+Service -> DataAccess:createAuth(AuthData)
 DataAccess -> db: Add AuthData
 Service --> Handler: RegisterResult
 Handler --> Server: {"username" : " ", "authToken" : " "}
@@ -29,7 +29,7 @@ Handler -> Service: login(LoginRequest)
 Service -> DataAccess: getUser(username)
 DataAccess -> db: Find UserData by username
 DataAccess --> Service: UserData
-Service -> DataAccess: verifyPassword(UserData, LoginRequest)
+Service -> DataAccess: createAuth(UserData)
 DataAccess -> db: Create AuthData for user
 DataAccess --> Service: AuthData
 Service --> Handler: LoginResult
@@ -92,8 +92,8 @@ DataAccess --> Service: AuthData
 Service -> DataAccess: getGame(gameID)
 DataAccess -> db: Find Game by gameID
 DataAccess --> Service: GameData
-Service -> DataAccess: updateGame(playerColer, gameID)
-DataAccess -> db: Replace Game by gameID
+Service -> DataAccess: updateGame(playerColor, username, gameID)
+DataAccess -> db: Set username of playerColor for specific gameID
 DataAccess --> Service: null
 Service --> Handler: JoinGamesResult
 Handler --> Server: {}
@@ -104,8 +104,12 @@ group #gray Clear application #white
 Client -> Server: [DELETE] /db
 Server -> Handler:
 Handler -> Service: clear(ClearRequest)
-Service -> DataAccess: clear()
-DataAccess -> db: Delete all AuthData, GameData, and UserData
+Service -> DataAccess: clearUserDAO()
+DataAccess -> db: Delete all UserData
+Service -> DataAccess: clearGameDAO()
+DataAccess -> db: Delete all GameData
+Service -> DataAccess: clearAuthDAO()
+DataAccess -> db: Delete all AuthData
 DataAccess --> Service: null
 Service --> Handler: ClearResult
 Handler --> Server: {}
