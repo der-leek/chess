@@ -75,3 +75,22 @@
    2. Sorts by input first output last
    3. Uses fewer than 8 parameters
 7. Whitespace enhances readability
+
+## 10/17
+### Ideas?
+Start with DAO
+Move from end to beginning
+
+### Services
+UserService:
+- register
+- login
+- logout
+
+GameService:
+- list games
+- create game
+- join game
+
+ClearService:
+- clear
