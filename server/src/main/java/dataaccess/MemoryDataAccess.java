@@ -28,6 +28,10 @@ public class MemoryDataAccess implements DataAccess {
         authData.put(authToken, data);
     }
 
+    public void deleteAuth(String authToken) {
+        authData.remove(authToken);
+    }
+
     public ArrayList<GameData> listGames() {
         ArrayList<GameData> gamesList = new ArrayList<>();
         gamesList.addAll(gameData.values());
