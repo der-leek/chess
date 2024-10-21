@@ -3,15 +3,18 @@ package server;
 import spark.*;
 import service.*;
 import dataaccess.*;
-import requests_results.ClearResponse;
+import requests_responses.*;
+import com.google.gson.JsonSyntaxException;
 
 public class Server {
     private final DataAccess dataAccess;
     private final ClearService clearService;
+    private final UserService userService;
 
     public Server() {
         dataAccess = new MemoryDataAccess();
         clearService = new ClearService(dataAccess);
+        userService = new UserService(dataAccess);
     }
 
     public int run(int desiredPort) {
@@ -39,7 +42,27 @@ public class Server {
     }
 
     private Object register(Request req, Response res) {
-        return res;
+        res.type("application/json");
+
+        RegisterResponse response;
+
+        try {
+            response = userService.register(
+                    new Serializer<RegisterRequest>().fromJson(req.body(), RegisterRequest.class));
+        } catch (JsonSyntaxException e) {
+            res.status(400);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+        } catch (DataAccessException e) {
+            res.status(403);
+            return new Serializer<ErrorResponse>()
+                    .toJson(new ErrorResponse("Error: already taken"));
+        } catch (Throwable e) {
+            res.status(500);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+        }
+
+        res.status(200);
+        return new Serializer<RegisterResponse>().toJson(response);
     }
 
     private Object delete(Request req, Response res) {
@@ -47,7 +70,7 @@ public class Server {
 
         if (!req.body().isEmpty()) {
             res.status(400);
-            return new Serializer<ClearResponse>().toJson(new ClearResponse("/db has no request body"));
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
         }
 
         try {
@@ -56,7 +79,7 @@ public class Server {
             clearService.clearAuths();
         } catch (RuntimeException e) {
             res.status(500);
-            return new Serializer<ClearResponse>().toJson(new ClearResponse("There was an error clearing the database"));
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
         }
 
         res.status(200);
