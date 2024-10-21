@@ -12,6 +12,8 @@ public interface DataAccess {
 
     void createAuth(String authToken, AuthData data);
 
+    void deleteAuth(String authToken);
+
     ArrayList<GameData> listGames();
 
     GameData findGameData(Integer gameID);

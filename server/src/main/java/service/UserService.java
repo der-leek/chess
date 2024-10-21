@@ -4,6 +4,7 @@ import model.*;
 import dataaccess.*;
 import requests_responses.*;
 import java.util.UUID;
+import com.google.gson.JsonSyntaxException;
 
 public class UserService {
 
@@ -13,8 +14,12 @@ public class UserService {
         this.dataAccess = dataAccess;
     }
 
-    public RegisterResponse register(RegisterRequest req) throws DataAccessException {
+    public LoginResponse register(RegisterRequest req) throws DataAccessException, JsonSyntaxException {
         String username = req.username();
+
+        if (req.password() == null) {
+            throw new JsonSyntaxException("must submit password");
+        }
 
         if (dataAccess.findUserData(username) != null) {
             throw new DataAccessException(username + " already taken. Choose another username");
@@ -23,10 +28,40 @@ public class UserService {
         UserData usr = new UserData(username, req.password(), req.email());
         dataAccess.createUser(username, usr);
 
+        AuthData authData = createAuth(username);
+        return new LoginResponse(username, authData.authToken());
+    }
+
+    public LoginResponse login(LoginRequest req) throws DataAccessException {
+        String username = req.username();
+        var userData = dataAccess.findUserData(username);
+
+        if (userData == null) {
+            throw new DataAccessException("Invalid username: " + username);
+        }
+
+        if (!userData.password().equals(req.password())) {
+            throw new DataAccessException("Invalid password");
+        }
+
+        AuthData authData = createAuth(username);
+        return new LoginResponse(username, authData.authToken());
+    }
+
+    public void logout(LogoutRequest req) throws DataAccessException {
+        var authData = dataAccess.findAuthData(req.authToken());
+
+        if (authData == null) {
+            throw new DataAccessException("Unauthorized");
+        }
+
+        dataAccess.deleteAuth(authData.authToken());
+    }
+
+    private AuthData createAuth(String username) {
         String authToken = UUID.randomUUID().toString();
         var authData = new AuthData(authToken, username);
         dataAccess.createAuth(authToken, authData);
-
-        return new RegisterResponse(username, authToken);
+        return authData;
     }
 }

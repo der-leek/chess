@@ -13,7 +13,7 @@ public class ClearServiceTests {
     private ClearService service;
 
     @Test
-    public void clearUsersPositive() {
+    public void clearUsersSuccess() {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
@@ -23,7 +23,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearUsersNegative() {
+    public void clearUsersFail() {
         dataAccess = null;
         service = new ClearService(dataAccess);
 
@@ -31,7 +31,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearAuthsPositive() {
+    public void clearAuthsSuccess() {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
@@ -41,7 +41,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearAuthsNegative() {
+    public void clearAuthsFail() {
         dataAccess = null;
         service = new ClearService(dataAccess);
 
@@ -49,7 +49,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearGamesPositive() {
+    public void clearGamesSuccess() {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
@@ -62,7 +62,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearGamesNegative() {
+    public void clearGamesFail() {
         dataAccess = null;
         service = new ClearService(dataAccess);
 
