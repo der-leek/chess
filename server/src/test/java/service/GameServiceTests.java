@@ -44,8 +44,8 @@ public class GameServiceTests {
         Assertions.assertInstanceOf(Integer.class, response.gameID());
         Assertions.assertInstanceOf(ChessGame.class, gameData.game());
         Assertions.assertEquals(gameName, gameData.gameName());
-        Assertions.assertEquals("", gameData.whiteUsername());
-        Assertions.assertEquals("", gameData.blackUsername());
+        Assertions.assertEquals(null, gameData.whiteUsername());
+        Assertions.assertEquals(null, gameData.blackUsername());
     }
 
     @Test
