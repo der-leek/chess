@@ -1,4 +1,4 @@
-package chess.move_finders;
+package chess.finders;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -8,12 +8,13 @@ import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPosition;
 
-public class RookMoveFinder extends ExtendedMove {
+public class QueenMoveFinder extends ExtendedMove {
 
     private Collection<ChessMove> moves = new HashSet<>();
-    private int directions[][] = {{1, 0}, {-1, 0}, {0, 1}, {0, -1}};
+    private int directions[][] =
+            {{1, 0}, {1, 1}, {0, 1}, {-1, 1}, {-1, 0}, {-1, -1}, {0, -1}, {1, -1},};
 
-    public RookMoveFinder(ChessBoard board, ChessPosition myPosition,
+    public QueenMoveFinder(ChessBoard board, ChessPosition myPosition,
             ChessGame.TeamColor currentTeam) {
         super();
         findLoopedMoves(directions, board, myPosition, currentTeam, moves);

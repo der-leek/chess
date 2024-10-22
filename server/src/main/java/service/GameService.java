@@ -3,7 +3,8 @@ package service;
 import model.*;
 import dataaccess.*;
 import chess.ChessGame;
-import requests_responses.*;
+import requests.*;
+import responses.*;
 import java.util.Random;
 
 public class GameService {
@@ -18,8 +19,8 @@ public class GameService {
             throws AuthorizationException {
         authorize(authToken);
 
-        int gameID_Limit = 9999;
-        int gameID = createRandomGameID(gameID_Limit);
+        int gameIDLimit = 9999;
+        int gameID = createRandomGameID(gameIDLimit);
         var gameData = new GameData(gameID, null, null, req.gameName(), new ChessGame());
         dataAccess.createGame(gameID, gameData);
 
@@ -36,9 +37,11 @@ public class GameService {
 
         if (oldGame == null) {
             throw new NullPointerException("Game does not exist");
-        } else if (playerColor.equals(ChessGame.TeamColor.WHITE) && oldGame.whiteUsername() != null) {
+        } else if (playerColor.equals(ChessGame.TeamColor.WHITE)
+                && oldGame.whiteUsername() != null) {
             throw new DataAccessException("Username taken");
-        } else if (playerColor.equals(ChessGame.TeamColor.BLACK) && oldGame.blackUsername() != null) {
+        } else if (playerColor.equals(ChessGame.TeamColor.BLACK)
+                && oldGame.blackUsername() != null) {
             throw new DataAccessException("Username taken");
         }
 

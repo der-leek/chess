@@ -1,4 +1,4 @@
-package requests_responses;
+package responses;
 
 public record LoginResponse(String username, String authToken) {
 }

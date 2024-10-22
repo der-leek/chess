@@ -3,7 +3,8 @@ package server;
 import spark.*;
 import service.*;
 import dataaccess.*;
-import requests_responses.*;
+import requests.*;
+import responses.*;
 import com.google.gson.JsonSyntaxException;
 
 public class Server {

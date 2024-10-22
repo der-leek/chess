@@ -1,4 +1,4 @@
-package chess.move_finders;
+package chess.finders;
 
 import java.util.Collection;
 import chess.*;

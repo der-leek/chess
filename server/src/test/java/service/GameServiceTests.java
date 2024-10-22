@@ -3,7 +3,7 @@ package service;
 import model.*;
 import dataaccess.*;
 import chess.ChessGame;
-import requests_responses.*;
+import requests.*;
 import java.util.ArrayList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
