@@ -1,4 +1,4 @@
-package chess.move_finders;
+package chess.finders;
 
 import chess.ChessGame;
 import chess.ChessPiece;

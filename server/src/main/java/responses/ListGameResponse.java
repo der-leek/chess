@@ -1,4 +1,4 @@
-package requests_responses;
+package responses;
 
 import model.*;
 import java.util.ArrayList;

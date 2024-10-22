@@ -2,7 +2,8 @@ package service;
 
 import model.*;
 import dataaccess.*;
-import requests_responses.*;
+import requests.*;
+import responses.*;
 import java.util.UUID;
 import com.google.gson.JsonSyntaxException;
 
@@ -14,7 +15,8 @@ public class UserService {
         this.dataAccess = dataAccess;
     }
 
-    public LoginResponse register(RegisterRequest req) throws DataAccessException, JsonSyntaxException {
+    public LoginResponse register(RegisterRequest req)
+            throws DataAccessException, JsonSyntaxException {
         String username = req.username();
 
         if (req.password() == null) {

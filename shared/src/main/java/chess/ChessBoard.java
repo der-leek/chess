@@ -81,15 +81,22 @@ public class ChessBoard implements Cloneable {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+
+        if (getClass() != obj.getClass()) {
             return false;
+        }
+
         ChessBoard other = (ChessBoard) obj;
-        if (!Arrays.deepEquals(squares, other.squares))
+        if (!Arrays.deepEquals(squares, other.squares)) {
             return false;
+        }
         return true;
     }
 

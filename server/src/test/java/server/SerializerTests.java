@@ -1,7 +1,7 @@
 package server;
 
-import requests_responses.ErrorResponse;
-import requests_responses.RegisterRequest;
+import responses.ErrorResponse;
+import requests.RegisterRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Assertions;
 
