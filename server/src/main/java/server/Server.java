@@ -39,6 +39,7 @@ public class Server {
         Spark.delete("/session", this::logout);
         Spark.post("/game", this::createGame);
         Spark.put("/game", this::joinGame);
+        Spark.get("/game", this::listGames);
     }
 
     private Object clear(Request req, Response res) {
@@ -180,5 +181,24 @@ public class Server {
 
         res.status(200);
         return "{}";
+    }
+
+    private Object listGames(Request req, Response res) {
+        res.type("application/json");
+        ListGameResponse response;
+
+        if (!req.body().isEmpty()) {
+            res.status(400);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+        }
+
+        try {
+            response = gameService.listGames(req.headers("authorization"));
+        } catch (AuthorizationException e) {
+            res.status(401);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+        }
+
+        return new Serializer<ListGameResponse>().toJson(response);
     }
 }

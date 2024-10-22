@@ -5,7 +5,6 @@ import dataaccess.*;
 import chess.ChessGame;
 import requests_responses.*;
 import java.util.Random;
-import java.util.Set;
 
 public class GameService {
 
@@ -21,7 +20,7 @@ public class GameService {
 
         int gameID_Limit = 9999;
         int gameID = createRandomGameID(gameID_Limit);
-        var gameData = new GameData(gameID, "", "", req.gameName(), new ChessGame());
+        var gameData = new GameData(gameID, null, null, req.gameName(), new ChessGame());
         dataAccess.createGame(gameID, gameData);
 
         return new CreateGameResponse(gameID);
@@ -32,21 +31,24 @@ public class GameService {
         var authData = authorize(authToken);
 
         int gameID = req.gameID();
-        String playerColor = req.playerColor();
+        ChessGame.TeamColor playerColor = req.playerColor();
         var oldGame = dataAccess.findGameData(gameID);
 
         if (oldGame == null) {
             throw new NullPointerException("Game does not exist");
-        } else if (!Set.of("WHITE", "BLACK").contains(playerColor)) {
-            throw new DataAccessException("Invalid player color");
-        } else if (playerColor.equals("WHITE") && !oldGame.whiteUsername().equals("")) {
+        } else if (playerColor.equals(ChessGame.TeamColor.WHITE) && oldGame.whiteUsername() != null) {
             throw new DataAccessException("Username taken");
-        } else if (playerColor.equals("BLACK") && !oldGame.blackUsername().equals("")) {
+        } else if (playerColor.equals(ChessGame.TeamColor.BLACK) && oldGame.blackUsername() != null) {
             throw new DataAccessException("Username taken");
         }
 
         var joinedGame = oldGame.updateUsername(req.playerColor(), authData.username());
         dataAccess.updateGame(gameID, joinedGame);
+    }
+
+    public ListGameResponse listGames(String authToken) throws AuthorizationException {
+        authorize(authToken);
+        return new ListGameResponse(dataAccess.listGames());
     }
 
     private AuthData authorize(String authToken) throws AuthorizationException {
