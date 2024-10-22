@@ -38,6 +38,7 @@ public class Server {
         Spark.post("/session", this::login);
         Spark.delete("/session", this::logout);
         Spark.post("/game", this::createGame);
+        Spark.put("/game", this::joinGame);
     }
 
     private Object clear(Request req, Response res) {
@@ -116,7 +117,7 @@ public class Server {
 
         try {
             userService.logout(new LogoutRequest(req.headers("authorization")));
-        } catch (DataAccessException e) {
+        } catch (AuthorizationException e) {
             res.status(401);
             return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
@@ -134,11 +135,12 @@ public class Server {
 
         try {
             response = gameService.createGame(req.headers("authorization"),
-                new Serializer<CreateGameRequest>().fromJson(req.body(), CreateGameRequest.class));
+                    new Serializer<CreateGameRequest>().fromJson(req.body(),
+                            CreateGameRequest.class));
         } catch (JsonSyntaxException e) {
             res.status(400);
             return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
-        } catch (DataAccessException e) {
+        } catch (AuthorizationException e) {
             res.status(401);
             return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
@@ -150,4 +152,33 @@ public class Server {
         return new Serializer<CreateGameResponse>().toJson(response);
     }
 
+    private Object joinGame(Request req, Response res) {
+        res.type("application/json");
+
+        if (req.body().isEmpty()) {
+            res.status(400);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+        }
+
+        try {
+            gameService.joinGame(req.headers("authorization"),
+                    new Serializer<JoinGameRequest>().fromJson(req.body(), JoinGameRequest.class));
+        } catch (AuthorizationException e) {
+            res.status(401);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+        } catch (DataAccessException e) {
+            res.status(403);
+            return new Serializer<ErrorResponse>()
+                    .toJson(new ErrorResponse("Error: already taken"));
+        } catch (NullPointerException e) {
+            res.status(400);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+        } catch (Throwable e) {
+            res.status(500);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+        }
+
+        res.status(200);
+        return "{}";
+    }
 }

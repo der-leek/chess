@@ -48,11 +48,11 @@ public class UserService {
         return new LoginResponse(username, authData.authToken());
     }
 
-    public void logout(LogoutRequest req) throws DataAccessException {
+    public void logout(LogoutRequest req) throws AuthorizationException {
         var authData = dataAccess.findAuthData(req.authToken());
 
         if (authData == null) {
-            throw new DataAccessException("Unauthorized");
+            throw new AuthorizationException("Unauthorized");
         }
 
         dataAccess.deleteAuth(authData.authToken());

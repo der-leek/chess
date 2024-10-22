@@ -93,7 +93,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void logoutSuccessful() throws DataAccessException {
+    public void logoutSuccessful() throws AuthorizationException {
         var authToken = "auth";
         var authData = new AuthData(authToken, "user");
         dataAccess.createAuth(authToken, authData);
