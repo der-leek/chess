@@ -82,14 +82,14 @@ public class UserServiceTests {
     }
 
     @Test
-    public void logoutUnauthorized() throws DataAccessException {
+    public void logoutUnauthorized() throws AuthorizationException {
         var authToken = "auth";
         var authData = new AuthData(authToken, "user");
         dataAccess.createAuth(authToken, authData);
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
         var request = new LogoutRequest("wrong" + authToken);
-        Assertions.assertThrows(DataAccessException.class, () -> userService.logout(request));
+        Assertions.assertThrows(AuthorizationException.class, () -> userService.logout(request));
     }
 
     @Test
