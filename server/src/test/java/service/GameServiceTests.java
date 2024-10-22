@@ -4,6 +4,7 @@ import model.*;
 import dataaccess.*;
 import chess.ChessGame;
 import requests_responses.*;
+import java.util.ArrayList;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,7 +53,7 @@ public class GameServiceTests {
         dataAccess.createAuth("auth", new AuthData("auth", "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
-        var request = new JoinGameRequest("white", 315);
+        var request = new JoinGameRequest(ChessGame.TeamColor.WHITE, 315);
         Assertions.assertThrows(AuthorizationException.class,
                 () -> gameService.joinGame("wrongAuth", request));
     }
@@ -65,10 +66,10 @@ public class GameServiceTests {
 
         int realGameID = 30;
         dataAccess.createGame(realGameID,
-                new GameData(realGameID, "", "", "game", new ChessGame()));
+                new GameData(realGameID, null, null, "game", new ChessGame()));
         Assertions.assertTrue(!dataAccess.isGameDataEmpty());
 
-        var request = new JoinGameRequest("WHITE", 3014);
+        var request = new JoinGameRequest(ChessGame.TeamColor.WHITE, 3014);
         Assertions.assertThrows(NullPointerException.class,
                 () -> gameService.joinGame(authToken, request));
     }
@@ -80,29 +81,73 @@ public class GameServiceTests {
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
         int gameID = 30;
-        dataAccess.createGame(gameID, new GameData(gameID, "white", "", "game", new ChessGame()));
+        dataAccess.createGame(gameID, new GameData(gameID, "white", null, "game", new ChessGame()));
         Assertions.assertTrue(!dataAccess.isGameDataEmpty());
 
-        var request = new JoinGameRequest("WHITE", gameID);
+        var request = new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID);
         Assertions.assertThrows(DataAccessException.class,
                 () -> gameService.joinGame(authToken, request));
     }
 
     @Test
-    public void joinGameSuccess() throws AuthorizationException, DataAccessException {
+    public void joinGameAddWhite() throws AuthorizationException, DataAccessException {
+        String authToken = "auth";
+        String whiteUsername = "white";
+        dataAccess.createAuth(authToken, new AuthData(authToken, whiteUsername));
+        Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
+
+        int gameID = 30;
+        dataAccess.createGame(gameID, new GameData(gameID, null, null, "game", new ChessGame()));
+        Assertions.assertTrue(!dataAccess.isGameDataEmpty());
+
+        var request = new JoinGameRequest(ChessGame.TeamColor.WHITE, gameID);
+        gameService.joinGame(authToken, request);
+
+        var joinedGame = dataAccess.findGameData(gameID);
+        Assertions.assertEquals(whiteUsername, joinedGame.whiteUsername());
+    }
+
+    @Test
+    public void joinGameAddBlack() throws AuthorizationException, DataAccessException {
         String authToken = "auth";
         String blackUsername = "black";
         dataAccess.createAuth(authToken, new AuthData(authToken, blackUsername));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
         int gameID = 30;
-        dataAccess.createGame(gameID, new GameData(gameID, "white", "", "game", new ChessGame()));
+        dataAccess.createGame(gameID, new GameData(gameID, null, null, "game", new ChessGame()));
         Assertions.assertTrue(!dataAccess.isGameDataEmpty());
 
-        var request = new JoinGameRequest("BLACK", gameID);
+        var request = new JoinGameRequest(ChessGame.TeamColor.BLACK, gameID);
         gameService.joinGame(authToken, request);
 
         var joinedGame = dataAccess.findGameData(gameID);
         Assertions.assertEquals(blackUsername, joinedGame.blackUsername());
+    }
+
+    @Test
+    public void listGamesInvalidAuth() {
+        dataAccess.createAuth("auth", new AuthData("auth", "user"));
+        Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
+
+        Assertions.assertThrows(AuthorizationException.class,
+                () -> gameService.listGames("wrongAuth"));
+    }
+
+    @Test
+    public void listGamesSuccess() throws AuthorizationException {
+        String authToken = "auth";
+        dataAccess.createAuth(authToken, new AuthData(authToken, "user"));
+        Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
+
+        int gameID = 3;
+        String gameName = "game";
+        ChessGame game = new ChessGame();
+        dataAccess.createGame(gameID, new GameData(gameID, null, null, gameName, game));
+        Assertions.assertTrue(!dataAccess.isGameDataEmpty());
+
+        ArrayList<GameData> expectedGames = new ArrayList<GameData>();
+        expectedGames.add(new GameData(gameID, null, null, gameName, game));
+        Assertions.assertEquals(expectedGames, dataAccess.listGames());
     }
 }
