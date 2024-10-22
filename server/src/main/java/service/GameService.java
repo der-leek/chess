@@ -5,6 +5,7 @@ import dataaccess.*;
 import chess.ChessGame;
 import requests_responses.*;
 import java.util.Random;
+import java.util.Set;
 
 public class GameService {
 
@@ -15,7 +16,7 @@ public class GameService {
     }
 
     public CreateGameResponse createGame(String authToken, CreateGameRequest req)
-            throws DataAccessException {
+            throws AuthorizationException {
         authorize(authToken);
 
         int gameID_Limit = 9999;
@@ -26,11 +27,34 @@ public class GameService {
         return new CreateGameResponse(gameID);
     }
 
-    private void authorize(String authToken) throws DataAccessException {
+    public void joinGame(String authToken, JoinGameRequest req)
+            throws AuthorizationException, DataAccessException {
+        var authData = authorize(authToken);
+
+        int gameID = req.gameID();
+        String playerColor = req.playerColor();
+        var oldGame = dataAccess.findGameData(gameID);
+
+        if (oldGame == null) {
+            throw new NullPointerException("Game does not exist");
+        } else if (!Set.of("WHITE", "BLACK").contains(playerColor)) {
+            throw new DataAccessException("Invalid player color");
+        } else if (playerColor.equals("WHITE") && !oldGame.whiteUsername().equals("")) {
+            throw new DataAccessException("Username taken");
+        } else if (playerColor.equals("BLACK") && !oldGame.blackUsername().equals("")) {
+            throw new DataAccessException("Username taken");
+        }
+
+        var joinedGame = oldGame.updateUsername(req.playerColor(), authData.username());
+        dataAccess.updateGame(gameID, joinedGame);
+    }
+
+    private AuthData authorize(String authToken) throws AuthorizationException {
         var authData = dataAccess.findAuthData(authToken);
         if (authData == null) {
-            throw new DataAccessException("Unauthorized");
+            throw new AuthorizationException("Unauthorized");
         }
+        return authData;
     }
 
     private Integer createRandomGameID(int upperLimit) {
