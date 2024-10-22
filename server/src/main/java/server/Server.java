@@ -10,11 +10,13 @@ public class Server {
     private final DataAccess dataAccess;
     private final ClearService clearService;
     private final UserService userService;
+    private final GameService gameService;
 
     public Server() {
         dataAccess = new MemoryDataAccess();
         clearService = new ClearService(dataAccess);
         userService = new UserService(dataAccess);
+        gameService = new GameService(dataAccess);
     }
 
     public Integer run(int desiredPort) {
@@ -35,6 +37,7 @@ public class Server {
         Spark.post("/user", this::register);
         Spark.post("/session", this::login);
         Spark.delete("/session", this::logout);
+        Spark.post("/game", this::createGame);
     }
 
     private Object clear(Request req, Response res) {
@@ -123,6 +126,28 @@ public class Server {
 
         res.status(200);
         return "{}";
+    }
+
+    private Object createGame(Request req, Response res) {
+        res.type("application/json");
+        CreateGameResponse response;
+
+        try {
+            response = gameService.createGame(req.headers("authorization"),
+                new Serializer<CreateGameRequest>().fromJson(req.body(), CreateGameRequest.class));
+        } catch (JsonSyntaxException e) {
+            res.status(400);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+        } catch (DataAccessException e) {
+            res.status(401);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+        } catch (Throwable e) {
+            res.status(500);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+        }
+
+        res.status(200);
+        return new Serializer<CreateGameResponse>().toJson(response);
     }
 
 }

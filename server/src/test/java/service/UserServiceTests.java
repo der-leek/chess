@@ -1,7 +1,7 @@
 package service;
 
-import dataaccess.*;
 import model.*;
+import dataaccess.*;
 import requests_responses.*;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
