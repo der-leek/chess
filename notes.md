@@ -94,3 +94,36 @@ GameService:
 
 ClearService:
 - clear
+
+## 10/29
+### UserData
+```sql
+CREATE TABLE IF NOT EXISTS userdata (
+    username varchar(255) not null primary key,
+    password varchar(255) not null,
+    email varchar(255) not null,
+    PRIMARY KEY (`username`),
+);
+```
+
+### AuthData
+```sql
+CREATE TABLE IF NOT EXISTS authdata (
+    username varchar(255) not null,
+    authToken varchar(255) not null,
+    foreign key(username) references userdata(username)
+);
+```
+
+### GameData
+```sql
+CREATE TABLE IF NOT EXISTS gamedata (
+    id integer not null auto_increment,
+    whiteUsername varchar(255),
+    blackUsername varchar(255),
+    gameName varchar(255),
+    game varchar(1023) -- look at how large a serialized chess game is
+    foreign key(whiteUsername) references userdata(username),
+    foreign key(blackUsername) references userdata(username),
+);
+```
