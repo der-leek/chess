@@ -28,7 +28,7 @@ public class UserService {
         }
 
         UserData usr = new UserData(username, req.password(), req.email());
-        dataAccess.createUser(username, usr);
+        dataAccess.createUser(usr);
 
         AuthData authData = createAuth(username);
         return new LoginResponse(username, authData.authToken());
@@ -63,7 +63,7 @@ public class UserService {
     private AuthData createAuth(String username) {
         String authToken = UUID.randomUUID().toString();
         var authData = new AuthData(authToken, username);
-        dataAccess.createAuth(authToken, authData);
+        dataAccess.createAuth(authData);
         return authData;
     }
 }

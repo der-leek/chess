@@ -21,8 +21,8 @@ public class UserServiceTests {
     @Test
     public void registerUserExists() {
         var request = new RegisterRequest("user", "pass", "email");
-        dataAccess.createUser(request.username(),
-                new UserData(request.username(), request.password(), request.email()));
+        dataAccess
+                .createUser(new UserData(request.username(), request.password(), request.email()));
         Assertions.assertThrows(DataAccessException.class, () -> userService.register(request));
     }
 
@@ -49,8 +49,7 @@ public class UserServiceTests {
         var request = new LoginRequest("us3r", "pass");
 
         String correctUsername = "user";
-        dataAccess.createUser(correctUsername,
-                new UserData(correctUsername, request.password(), "email"));
+        dataAccess.createUser(new UserData(correctUsername, request.password(), "email"));
 
         Assertions.assertTrue(!dataAccess.isUserDataEmpty());
         Assertions.assertThrows(DataAccessException.class, () -> userService.login(request));
@@ -61,8 +60,7 @@ public class UserServiceTests {
         var request = new LoginRequest("user", "p4ss");
 
         String correctPassword = "pass";
-        dataAccess.createUser(request.username(),
-                new UserData(request.username(), correctPassword, "email"));
+        dataAccess.createUser(new UserData(request.username(), correctPassword, "email"));
 
         Assertions.assertTrue(!dataAccess.isUserDataEmpty());
         Assertions.assertThrows(DataAccessException.class, () -> userService.login(request));
@@ -71,8 +69,7 @@ public class UserServiceTests {
     @Test
     public void loginSuccessful() throws DataAccessException {
         var request = new LoginRequest("user", "pass");
-        dataAccess.createUser(request.username(),
-                new UserData(request.username(), request.password(), "email"));
+        dataAccess.createUser(new UserData(request.username(), request.password(), "email"));
         Assertions.assertTrue(!dataAccess.isUserDataEmpty());
 
         var result = userService.login(request);
@@ -85,7 +82,7 @@ public class UserServiceTests {
     public void logoutUnauthorized() throws AuthorizationException {
         var authToken = "auth";
         var authData = new AuthData(authToken, "user");
-        dataAccess.createAuth(authToken, authData);
+        dataAccess.createAuth(authData);
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
         var request = new LogoutRequest("wrong" + authToken);
@@ -96,7 +93,7 @@ public class UserServiceTests {
     public void logoutSuccessful() throws AuthorizationException {
         var authToken = "auth";
         var authData = new AuthData(authToken, "user");
-        dataAccess.createAuth(authToken, authData);
+        dataAccess.createAuth(authData);
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
         var request = new LogoutRequest(authToken);

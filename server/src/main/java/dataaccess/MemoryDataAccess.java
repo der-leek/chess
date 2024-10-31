@@ -16,16 +16,16 @@ public class MemoryDataAccess implements DataAccess {
         return userData.get(username);
     }
 
-    public void createUser(String username, UserData data) {
-        userData.put(username, data);
+    public void createUser(UserData data) {
+        userData.put(data.username(), data);
     }
 
     public AuthData findAuthData(String authToken) {
         return authData.get(authToken);
     }
 
-    public void createAuth(String authToken, AuthData data) {
-        authData.put(authToken, data);
+    public void createAuth(AuthData data) {
+        authData.put(data.authToken(), data);
     }
 
     public void deleteAuth(String authToken) {
@@ -42,12 +42,12 @@ public class MemoryDataAccess implements DataAccess {
         return gameData.get(gameID);
     }
 
-    public void createGame(Integer gameID, GameData data) {
-        gameData.put(gameID, data);
+    public void createGame(GameData data) {
+        gameData.put(data.gameID(), data);
     }
 
-    public void updateGame(Integer gameID, GameData newGD) {
-        createGame(gameID, newGD);
+    public void updateGame(GameData newGD) {
+        createGame(newGD);
     }
 
     public void clearUserDAO() {

@@ -6,11 +6,11 @@ import java.util.ArrayList;
 public interface DataAccess {
     UserData findUserData(String username);
 
-    void createUser(String username, UserData data);
+    void createUser(UserData data);
 
     AuthData findAuthData(String authToken);
 
-    void createAuth(String authToken, AuthData data);
+    void createAuth(AuthData data);
 
     void deleteAuth(String authToken);
 
@@ -18,9 +18,9 @@ public interface DataAccess {
 
     GameData findGameData(Integer gameID);
 
-    void createGame(Integer gameID, GameData data);
+    void createGame(GameData data);
 
-    void updateGame(Integer gameID, GameData data);
+    void updateGame(GameData data);
 
     void clearUserDAO();
 

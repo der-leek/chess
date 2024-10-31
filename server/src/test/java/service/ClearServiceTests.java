@@ -17,7 +17,7 @@ public class ClearServiceTests {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
-        dataAccess.createUser("username", new UserData("username", "password", "email"));
+        dataAccess.createUser(new UserData("username", "password", "email"));
         service.clearUsers();
         Assertions.assertTrue(dataAccess.isUserDataEmpty());
     }
@@ -35,7 +35,7 @@ public class ClearServiceTests {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
-        dataAccess.createAuth("username", new AuthData("authToken", "username"));
+        dataAccess.createAuth(new AuthData("authToken", "username"));
         service.clearAuths();
         Assertions.assertTrue(dataAccess.isAuthDataEmpty());
     }
@@ -55,7 +55,7 @@ public class ClearServiceTests {
 
         Integer gameID = new Random().nextInt(10000);
         GameData gd = new GameData(gameID, "", "", "new game", new ChessGame());
-        dataAccess.createGame(gameID, gd);
+        dataAccess.createGame(gd);
 
         service.clearGames();
         Assertions.assertTrue(dataAccess.isGameDataEmpty());

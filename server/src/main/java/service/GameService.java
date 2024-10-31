@@ -22,7 +22,7 @@ public class GameService {
         int gameIDLimit = 9999;
         int gameID = createRandomGameID(gameIDLimit);
         var gameData = new GameData(gameID, null, null, req.gameName(), new ChessGame());
-        dataAccess.createGame(gameID, gameData);
+        dataAccess.createGame(gameData);
 
         return new CreateGameResponse(gameID);
     }
@@ -46,7 +46,7 @@ public class GameService {
         }
 
         var joinedGame = oldGame.updateUsername(req.playerColor(), authData.username());
-        dataAccess.updateGame(gameID, joinedGame);
+        dataAccess.updateGame(joinedGame);
     }
 
     public ListGameResponse listGames(String authToken) throws AuthorizationException {
