@@ -4,13 +4,13 @@ import model.*;
 import java.util.ArrayList;
 
 public interface DataAccess {
-    UserData findUserData(String username);
+    UserData findUserData(String username) throws DataAccessException;
 
     void createUser(UserData data) throws DataAccessException;
 
-    AuthData findAuthData(String authToken);
+    AuthData findAuthData(String authToken) throws DataAccessException;
 
-    void createAuth(AuthData data);
+    void createAuth(AuthData data) throws DataAccessException;
 
     void deleteAuth(String authToken);
 

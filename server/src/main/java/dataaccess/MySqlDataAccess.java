@@ -12,7 +12,26 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     public UserData findUserData(String username) throws DataAccessException {
-        return null;
+        if (!username.matches("[a-zA-Z]+")) {
+            throw new DataAccessException("Invalid username. No special characters allowed");
+        }
+
+        String query = "SELECT * FROM userdata WHERE username=?";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(query)) {
+
+            preparedStatement.setString(1, username);
+            try (var rs = preparedStatement.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                return new UserData(rs.getString("username"), rs.getString("password"),
+                        rs.getString("email"));
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
     }
 
     public void createUser(UserData data) throws DataAccessException {
@@ -21,7 +40,7 @@ public class MySqlDataAccess implements DataAccess {
         boolean cleanEmail = data.email().matches("^[\\w\\.-]+@[a-zA-Z\\d\\.-]+\\.[a-zA-Z]{2,}$");
 
         if (!cleanUsername || !cleanPassword || !cleanEmail) {
-            throw new DataAccessException("Invalid username. No special characters allowed");
+            throw new DataAccessException("Invalid credentials. No special characters allowed");
         }
 
         String statement = "INSERT INTO userdata (username, password, email) VALUES (?, ?, ?)";
@@ -38,10 +57,47 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     public AuthData findAuthData(String authToken) throws DataAccessException {
-        return null;
+        if (!authToken.matches(
+                "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
+            throw new DataAccessException("Invalid authToken");
+        }
+
+        String query = "SELECT * FROM authdata WHERE authToken=?";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(query)) {
+
+            preparedStatement.setString(1, authToken);
+            try (var rs = preparedStatement.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                return new AuthData(rs.getString("authToken"), rs.getString("username"));
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
     }
 
-    public void createAuth(AuthData data) throws DataAccessException {}
+    public void createAuth(AuthData data) throws DataAccessException {
+        boolean cleanAuthToken = data.authToken().matches(
+                "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+        boolean cleanUsername = data.username().matches("[a-zA-Z]+");
+
+        if (!cleanUsername || !cleanAuthToken) {
+            throw new DataAccessException("Invalid credentials");
+        }
+
+        String statement = "INSERT INTO authdata (authToken, username) VALUES (?, ?)";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, data.authToken());
+            preparedStatement.setString(2, data.username());
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
 
     public void deleteAuth(String authToken) throws DataAccessException {}
 
@@ -128,8 +184,8 @@ public class MySqlDataAccess implements DataAccess {
             )
             """, """
             CREATE TABLE IF NOT EXISTS authdata (
-                username VARCHAR(255) NOT NULL,
                 authToken VARCHAR(255) NOT NULL,
+                username VARCHAR(255) NOT NULL,
                 foreign key(username) references userdata(username),
                 UNIQUE (authToken)
             )
