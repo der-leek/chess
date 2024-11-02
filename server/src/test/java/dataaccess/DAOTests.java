@@ -44,6 +44,22 @@ public class DAOTests {
     }
 
     @Test
+    public void findUserSuccess() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        var data = dataAccess.findUserData(testUserData.username());
+
+        Assertions.assertNotNull(data);
+    }
+
+    @Test
+    public void findNonUser() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        var data = dataAccess.findUserData("badUser");
+
+        Assertions.assertNull(data);
+    }
+
+    @Test
     public void createNewAuthSuccess() throws DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
