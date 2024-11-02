@@ -38,6 +38,7 @@ public class DAOTests {
     @Test
     public void createNewUserDuplicateUsername() throws DataAccessException {
         dataAccess.createUser(testUserData);
+
         Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.createUser(new UserData(testUserData.username(),
                         testUserData.password(), testUserData.email())));
@@ -62,6 +63,7 @@ public class DAOTests {
     @Test
     public void findUserBadUsername() throws DataAccessException {
         dataAccess.createUser(testUserData);
+
         Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.findUserData("badUs3r"));
     }
@@ -86,6 +88,7 @@ public class DAOTests {
     @Test
     public void createNewAuthBadAuthToken() throws DataAccessException {
         dataAccess.createUser(testUserData);
+
         Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.createAuth(new AuthData("badAuth", testAuthData.username())));
 
@@ -114,14 +117,44 @@ public class DAOTests {
     public void findNonAuth() throws DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
+
         Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.findAuthData("badAuth"));
+    }
+
+    @Test
+    public void deleteAuthSuccess() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.createAuth(testAuthData);
+        dataAccess.deleteAuth(testAuthData.authToken());
+        var data = dataAccess.findAuthData(testAuthData.authToken());
+
+        Assertions.assertNull(data);
+    }
+
+    @Test
+    public void deleteAuthNonToken() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.createAuth(testAuthData);
+        dataAccess.deleteAuth("3d9a9c9b-6745-4a7f-8cfc-bc11c8ab2b35");
+        var data = dataAccess.findAuthData(testAuthData.authToken());
+
+        Assertions.assertNotNull(data);
+    }
+
+    @Test
+    public void deleteAuthBadToken() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.createAuth(testAuthData);
+
+        Assertions.assertThrows(DataAccessException.class, () -> dataAccess.deleteAuth("badToken"));
     }
 
     @Test
     public void clearUserSuccess() throws DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.clearUserDAO();
+
         Assertions.assertTrue(dataAccess.isUserDataEmpty());
     }
 
@@ -130,6 +163,7 @@ public class DAOTests {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
         dataAccess.clearAuthDAO();
+
         Assertions.assertTrue(dataAccess.isAuthDataEmpty());
     }
 

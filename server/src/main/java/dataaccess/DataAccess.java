@@ -12,7 +12,7 @@ public interface DataAccess {
 
     void createAuth(AuthData data) throws DataAccessException;
 
-    void deleteAuth(String authToken);
+    void deleteAuth(String authToken) throws DataAccessException;
 
     ArrayList<GameData> listGames();
 

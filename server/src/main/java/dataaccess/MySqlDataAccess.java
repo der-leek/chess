@@ -99,7 +99,23 @@ public class MySqlDataAccess implements DataAccess {
         }
     }
 
-    public void deleteAuth(String authToken) throws DataAccessException {}
+    public void deleteAuth(String authToken) throws DataAccessException {
+        boolean cleanAuthToken = authToken.matches(
+                "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
+
+        if (!cleanAuthToken) {
+            throw new DataAccessException("Invalid credentials");
+        }
+
+        String statement = "DELETE FROM authdata WHERE authToken=?";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, authToken);
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
 
     public ArrayList<GameData> listGames() {
         return null;
