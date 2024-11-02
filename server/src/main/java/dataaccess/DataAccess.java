@@ -24,13 +24,13 @@ public interface DataAccess {
 
     void clearUserDAO() throws DataAccessException;
 
-    void clearAuthDAO();
+    void clearAuthDAO() throws DataAccessException;
 
     void clearGameDAO();
 
-    boolean isUserDataEmpty();
+    boolean isUserDataEmpty() throws DataAccessException;
 
-    boolean isAuthDataEmpty();
+    boolean isAuthDataEmpty() throws DataAccessException;
 
-    boolean isGameDataEmpty();
+    boolean isGameDataEmpty() throws DataAccessException;
 }

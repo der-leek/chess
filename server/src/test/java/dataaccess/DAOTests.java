@@ -119,10 +119,19 @@ public class DAOTests {
     }
 
     @Test
-    public void clearUserSuccess() throws DataAccessException {}
+    public void clearUserSuccess() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.clearUserDAO();
+        Assertions.assertTrue(dataAccess.isUserDataEmpty());
+    }
 
     @Test
-    public void clearAuthSuccess() throws DataAccessException {}
+    public void clearAuthSuccess() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.createAuth(testAuthData);
+        dataAccess.clearAuthDAO();
+        Assertions.assertTrue(dataAccess.isAuthDataEmpty());
+    }
 
     @Test
     public void clearGameSuccess() throws DataAccessException {}
