@@ -180,8 +180,37 @@ public class MySqlDataAccess implements DataAccess {
         }
     }
 
-    public void updateGame(GameData data) {
-        // update data where gameIDs match
+    public void updateGame(GameData data) throws DataAccessException {
+        boolean cleanGameID = (Object) data.gameID() instanceof Integer;
+        boolean cleanWhiteUsername =
+                data.whiteUsername() == null || data.whiteUsername().matches("[a-zA-Z]+");
+        boolean cleanBlackUsername =
+                data.blackUsername() == null || data.blackUsername().matches("[a-zA-Z]+");
+        boolean cleanGameName = data.gameName().matches("[a-zA-Z]+");
+        String game;
+
+        try {
+            game = new Serializer<ChessGame>().toJson(data.game());
+        } catch (JsonSyntaxException ex) {
+            throw new DataAccessException("Invalid ChessGame Object");
+        }
+        if (!cleanGameID || !cleanWhiteUsername || !cleanBlackUsername || !cleanGameName) {
+            throw new DataAccessException("Invalid gameData");
+        }
+
+        String statement =
+                "UPDATE gamedata SET whiteUsername=?, blackUsername=?, gameName=?, game=? where id=?";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setString(1, data.whiteUsername());
+            preparedStatement.setString(2, data.blackUsername());
+            preparedStatement.setString(3, data.gameName());
+            preparedStatement.setString(4, game);
+            preparedStatement.setInt(5, data.gameID());
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
     }
 
     public void clearUserDAO() throws DataAccessException {

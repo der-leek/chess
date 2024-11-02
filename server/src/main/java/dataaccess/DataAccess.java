@@ -20,7 +20,7 @@ public interface DataAccess {
 
     void createGame(GameData data) throws DataAccessException;
 
-    void updateGame(GameData data);
+    void updateGame(GameData data) throws DataAccessException;
 
     void clearUserDAO() throws DataAccessException;
 

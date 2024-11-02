@@ -166,6 +166,14 @@ public class DAOTests {
     }
 
     @Test
+    public void createGameDuplicate() throws DataAccessException {
+        dataAccess.createGame(testGameData);
+
+        Assertions.assertThrows(DataAccessException.class,
+                () -> dataAccess.createGame(testGameData));
+    }
+
+    @Test
     public void findGameSuccess() throws DataAccessException {
         dataAccess.createGame(testGameData);
         var data = dataAccess.findGameData(testGameData.gameID());
@@ -187,11 +195,29 @@ public class DAOTests {
     }
 
     @Test
-    public void createGameDuplicate() throws DataAccessException {
+    public void updateGameSuccess() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.createGame(testGameData);
+        dataAccess.updateGame(new GameData(testGameData.gameID(), testUserData.username(), null,
+                testGameData.gameName(), testGameData.game()));
+        var data = dataAccess.findGameData(testGameData.gameID());
+
+        Assertions.assertEquals(testGameData.gameID(), data.gameID());
+        Assertions.assertEquals(testUserData.username(), data.whiteUsername());
+        Assertions.assertEquals(testGameData.blackUsername(), data.blackUsername());
+        Assertions.assertEquals(testGameData.gameName(), data.gameName());
+        Assertions.assertEquals(testGameData.game(), data.game());
+    }
+
+    @Test
+    public void updateGameBadUsername() throws DataAccessException {
+        dataAccess.createUser(testUserData);
         dataAccess.createGame(testGameData);
 
         Assertions.assertThrows(DataAccessException.class,
-                () -> dataAccess.createGame(testGameData));
+                () -> dataAccess.updateGame(new GameData(testGameData.gameID(), "badUs3r", null,
+                        testGameData.gameName(), testGameData.game())));
+
     }
 
     @Test
