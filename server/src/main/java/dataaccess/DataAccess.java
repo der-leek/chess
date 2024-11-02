@@ -26,7 +26,7 @@ public interface DataAccess {
 
     void clearAuthDAO() throws DataAccessException;
 
-    void clearGameDAO();
+    void clearGameDAO() throws DataAccessException;
 
     boolean isUserDataEmpty() throws DataAccessException;
 

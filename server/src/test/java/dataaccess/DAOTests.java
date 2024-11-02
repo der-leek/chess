@@ -212,5 +212,10 @@ public class DAOTests {
     }
 
     @Test
-    public void clearGameSuccess() throws DataAccessException {}
+    public void clearGameSuccess() throws DataAccessException {
+        dataAccess.createGame(testGameData);
+        dataAccess.clearGameDAO();
+
+        Assertions.assertTrue(dataAccess.isGameDataEmpty());
+    }
 }
