@@ -6,7 +6,7 @@ import java.util.ArrayList;
 public interface DataAccess {
     UserData findUserData(String username);
 
-    void createUser(UserData data);
+    void createUser(UserData data) throws DataAccessException;
 
     AuthData findAuthData(String authToken);
 
