@@ -60,6 +60,13 @@ public class DAOTests {
     }
 
     @Test
+    public void findUserBadUsername() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        Assertions.assertThrows(DataAccessException.class,
+                () -> dataAccess.findUserData("badUs3r"));
+    }
+
+    @Test
     public void createNewAuthSuccess() throws DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
@@ -82,6 +89,33 @@ public class DAOTests {
         Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.createAuth(new AuthData("badAuth", testAuthData.username())));
 
+    }
+
+    @Test
+    public void findAuthSuccess() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.createAuth(testAuthData);
+        var data = dataAccess.findAuthData(testAuthData.authToken());
+
+        Assertions.assertEquals(testAuthData.authToken(), data.authToken());
+        Assertions.assertEquals(testAuthData.username(), data.username());
+    }
+
+    @Test
+    public void findAuthBadAuth() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.createAuth(testAuthData);
+        var data = dataAccess.findAuthData("3d9a9c9b-6745-4a7f-8cfc-bc11c8ab2b35");
+
+        Assertions.assertNull(data);
+    }
+
+    @Test
+    public void findNonAuth() throws DataAccessException {
+        dataAccess.createUser(testUserData);
+        dataAccess.createAuth(testAuthData);
+        Assertions.assertThrows(DataAccessException.class,
+                () -> dataAccess.findAuthData("badAuth"));
     }
 
     @Test
