@@ -166,6 +166,27 @@ public class DAOTests {
     }
 
     @Test
+    public void findGameSuccess() throws DataAccessException {
+        dataAccess.createGame(testGameData);
+        var data = dataAccess.findGameData(testGameData.gameID());
+
+        Assertions.assertNotNull(data);
+        Assertions.assertEquals(testGameData.gameID(), data.gameID());
+        Assertions.assertEquals(testGameData.whiteUsername(), data.whiteUsername());
+        Assertions.assertEquals(testGameData.blackUsername(), data.blackUsername());
+        Assertions.assertEquals(testGameData.gameName(), data.gameName());
+        Assertions.assertEquals(testGameData.game(), data.game());
+    }
+
+    @Test
+    public void findGameWrongID() throws DataAccessException {
+        dataAccess.createGame(testGameData);
+        var data = dataAccess.findGameData(testGameData.gameID() + 3);
+
+        Assertions.assertNull(data);
+    }
+
+    @Test
     public void createGameDuplicate() throws DataAccessException {
         dataAccess.createGame(testGameData);
 
