@@ -218,4 +218,46 @@ public class ChessGame implements Cloneable {
     public ChessBoard getBoard() {
         return board;
     }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((board == null) ? 0 : board.hashCode());
+        result = prime * result + ((teamTurn == null) ? 0 : teamTurn.hashCode());
+        result = prime * result + ((teamPositions == null) ? 0 : teamPositions.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ChessGame other = (ChessGame) obj;
+        if (board == null) {
+            if (other.board != null) {
+                return false;
+            }
+        } else if (!board.equals(other.board)) {
+            return false;
+        }
+        if (teamTurn != other.teamTurn) {
+            return false;
+        }
+        if (teamPositions == null) {
+            if (other.teamPositions != null) {
+                return false;
+            }
+        } else if (!teamPositions.equals(other.teamPositions)) {
+            return false;
+        }
+        return true;
+    }
 }

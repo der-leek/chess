@@ -16,9 +16,9 @@ public interface DataAccess {
 
     ArrayList<GameData> listGames();
 
-    GameData findGameData(Integer gameID);
+    GameData findGameData(Integer gameID) throws DataAccessException;
 
-    void createGame(GameData data);
+    void createGame(GameData data) throws DataAccessException;
 
     void updateGame(GameData data);
 

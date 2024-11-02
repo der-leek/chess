@@ -2,7 +2,6 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
-
 import chess.ChessGame.TeamColor;
 
 public class TeamPositions {
@@ -57,5 +56,59 @@ public class TeamPositions {
 
     public Collection<ChessPosition> getEnemyPositions(ChessGame.TeamColor teamColor) {
         return (teamColor == TeamColor.WHITE ? blackPositions : whitePositions);
+    }
+
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((whitePositions == null) ? 0 : whitePositions.hashCode());
+        result = prime * result + ((blackPositions == null) ? 0 : blackPositions.hashCode());
+        result = prime * result + ((whiteKingPosition == null) ? 0 : whiteKingPosition.hashCode());
+        result = prime * result + ((blackKingPosition == null) ? 0 : blackKingPosition.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        TeamPositions other = (TeamPositions) obj;
+        if (whitePositions == null) {
+            if (other.whitePositions != null) {
+                return false;
+            }
+        } else if (!whitePositions.containsAll(other.whitePositions)) {
+            return false;
+        }
+        if (blackPositions == null) {
+            if (other.blackPositions != null) {
+                return false;
+            }
+        } else if (!blackPositions.containsAll(other.blackPositions)) {
+            return false;
+        }
+        if (whiteKingPosition == null) {
+            if (other.whiteKingPosition != null) {
+                return false;
+            }
+        } else if (!whiteKingPosition.equals(other.whiteKingPosition)) {
+            return false;
+        }
+        if (blackKingPosition == null) {
+            if (other.blackKingPosition != null) {
+                return false;
+            }
+        } else if (!blackKingPosition.equals(other.blackKingPosition)) {
+            return false;
+        }
+        return true;
     }
 }

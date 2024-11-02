@@ -2,8 +2,11 @@ package dataaccess;
 
 import model.*;
 import java.sql.*;
+import chess.ChessGame;
+import server.Serializer;
 import java.util.ArrayList;
 import org.mindrot.jbcrypt.BCrypt;
+import com.google.gson.JsonSyntaxException;
 
 public class MySqlDataAccess implements DataAccess {
 
@@ -121,13 +124,65 @@ public class MySqlDataAccess implements DataAccess {
         return null;
     }
 
-    public GameData findGameData(Integer gameID) {
-        return null;
+    public GameData findGameData(Integer gameID) throws DataAccessException {
+        String query = "SELECT * FROM gamedata WHERE id=?";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(query)) {
+
+            preparedStatement.setInt(1, gameID);
+            try (var rs = preparedStatement.executeQuery()) {
+                if (!rs.next()) {
+                    return null;
+                }
+
+                int foundGameID = rs.getInt("id");
+                String whiteUsername = rs.getString("whiteUsername");
+                String blackUsername = rs.getString("blackUsername");
+                String gameName = rs.getString("gameName");
+                ChessGame game =
+                        new Serializer<ChessGame>().fromJson(rs.getString("game"), ChessGame.class);
+
+                return new GameData(foundGameID, whiteUsername, blackUsername, gameName, game);
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
     }
 
-    public void createGame(GameData data) {}
+    public void createGame(GameData data) throws DataAccessException {
+        boolean cleanGameID = (Object) data.gameID() instanceof Integer;
+        boolean cleanGameName = data.gameName().matches("[a-zA-Z]+");
+        String game;
 
-    public void updateGame(GameData data) {}
+        try {
+            game = new Serializer<ChessGame>().toJson(data.game());
+        } catch (JsonSyntaxException ex) {
+            throw new DataAccessException("Invalid ChessGame Object");
+        }
+
+        if (!cleanGameID || !cleanGameName || data.whiteUsername() != null
+                || data.blackUsername() != null) {
+            throw new DataAccessException("Invalid gameData");
+        }
+
+        String statement =
+                "INSERT INTO gamedata (id, whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?, ?)";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.setInt(1, data.gameID());
+            preparedStatement.setString(2, data.whiteUsername());
+            preparedStatement.setString(3, data.blackUsername());
+            preparedStatement.setString(4, data.gameName());
+            preparedStatement.setString(5, game);
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
+
+    public void updateGame(GameData data) {
+        // update data where gameIDs match
+    }
 
     public void clearUserDAO() throws DataAccessException {
         String statement = "DELETE FROM userdata";
@@ -193,10 +248,9 @@ public class MySqlDataAccess implements DataAccess {
 
     private final String[] createStatements = {"""
             CREATE TABLE IF NOT EXISTS userdata (
-                username VARCHAR(255) NOT NULL primary key,
+                username VARCHAR(255) NOT NULL PRIMARY KEY,
                 password VARCHAR(255) NOT NULL,
-                email VARCHAR(255) NOT NULL,
-                PRIMARY KEY (username)
+                email VARCHAR(255) NOT NULL
             )
             """, """
             CREATE TABLE IF NOT EXISTS authdata (
@@ -207,13 +261,14 @@ public class MySqlDataAccess implements DataAccess {
             )
             """, """
             CREATE TABLE IF NOT EXISTS gamedata (
-                id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                id INT NOT NULL,
                 whiteUsername VARCHAR(255),
                 blackUsername VARCHAR(255),
-                gameName VARCHAR(255),
-                game VARCHAR(1023), -- look at how large a serialized chess game is
+                gameName VARCHAR(255) NOT NULL,
+                game longtext NOT NULL,
                 foreign key(whiteUsername) references userdata(username),
-                foreign key(blackUsername) references userdata(username)
+                foreign key(blackUsername) references userdata(username),
+                UNIQUE (id)
             )
             """};
 

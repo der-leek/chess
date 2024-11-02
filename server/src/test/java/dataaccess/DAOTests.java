@@ -3,6 +3,7 @@ package dataaccess;
 import model.*;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
+import chess.ChessGame;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -11,11 +12,13 @@ public class DAOTests {
     private DataAccess dataAccess;
     private UserData testUserData;
     private AuthData testAuthData;
+    private GameData testGameData;
 
     public DAOTests() throws DataAccessException {
         dataAccess = new MySqlDataAccess();
         testUserData = new UserData("user", "pass", "me@mail.com");
         testAuthData = new AuthData("3f9a9c9b-6745-4a7f-8cfc-bc11c8ab2b35", "user");
+        testGameData = new GameData(34, null, null, "game", new ChessGame());
     }
 
     @BeforeEach
@@ -148,6 +151,26 @@ public class DAOTests {
         dataAccess.createAuth(testAuthData);
 
         Assertions.assertThrows(DataAccessException.class, () -> dataAccess.deleteAuth("badToken"));
+    }
+
+    @Test
+    public void createGameSuccess() throws DataAccessException {
+        dataAccess.createGame(testGameData);
+        var data = dataAccess.findGameData(testGameData.gameID());
+
+        Assertions.assertEquals(testGameData.gameID(), data.gameID());
+        Assertions.assertEquals(testGameData.whiteUsername(), data.whiteUsername());
+        Assertions.assertEquals(testGameData.blackUsername(), data.blackUsername());
+        Assertions.assertEquals(testGameData.gameName(), data.gameName());
+        Assertions.assertEquals(testGameData.game(), data.game());
+    }
+
+    @Test
+    public void createGameDuplicate() throws DataAccessException {
+        dataAccess.createGame(testGameData);
+
+        Assertions.assertThrows(DataAccessException.class,
+                () -> dataAccess.createGame(testGameData));
     }
 
     @Test
