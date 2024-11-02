@@ -22,7 +22,7 @@ public interface DataAccess {
 
     void updateGame(GameData data);
 
-    void clearUserDAO();
+    void clearUserDAO() throws DataAccessException;
 
     void clearAuthDAO();
 

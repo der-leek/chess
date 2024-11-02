@@ -57,21 +57,65 @@ public class MySqlDataAccess implements DataAccess {
 
     public void updateGame(GameData data) {}
 
-    public void clearUserDAO() throws DataAccessException {}
+    public void clearUserDAO() throws DataAccessException {
+        String statement = "DELETE FROM userdata";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
 
-    public void clearAuthDAO() throws DataAccessException {}
+    public void clearAuthDAO() throws DataAccessException {
+        String statement = "DELETE FROM authdata";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
 
-    public void clearGameDAO() throws DataAccessException {}
+    public void clearGameDAO() throws DataAccessException {
+        String statement = "DELETE FROM gamedata";
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(statement)) {
+            preparedStatement.executeUpdate();
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
+    }
 
     public boolean isUserDataEmpty() throws DataAccessException {
-        return false;
+        return isDataEmpty("userdata");
     }
 
     public boolean isAuthDataEmpty() throws DataAccessException {
-        return false;
+        return isDataEmpty("authdata");
     }
 
     public boolean isGameDataEmpty() throws DataAccessException {
+        return isDataEmpty("gamedata");
+    }
+
+    private boolean isDataEmpty(String table) throws DataAccessException {
+        if (!table.matches("[a-zA-Z]+")) {
+            throw new DataAccessException("Invalid table name");
+        }
+
+        String query = "SELECT * FROM " + table;
+        try (var conn = DatabaseManager.getConnection();
+                var preparedStatement = conn.prepareStatement(query)) {
+
+            try (var rs = preparedStatement.executeQuery()) {
+                if (!rs.next()) {
+                    return true;
+                }
+            }
+        } catch (SQLException ex) {
+            throw new DataAccessException(ex.getMessage());
+        }
         return false;
     }
 
