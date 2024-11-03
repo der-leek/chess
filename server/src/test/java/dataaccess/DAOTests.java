@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.*;
+import service.AuthorizationException;
 import org.junit.jupiter.api.Test;
 import org.mindrot.jbcrypt.BCrypt;
 import chess.ChessGame;
@@ -72,7 +73,7 @@ public class DAOTests {
     }
 
     @Test
-    public void createNewAuthSuccess() throws DataAccessException {
+    public void createNewAuthSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
         var data = dataAccess.findAuthData(testAuthData.authToken());
@@ -98,7 +99,7 @@ public class DAOTests {
     }
 
     @Test
-    public void findAuthSuccess() throws DataAccessException {
+    public void findAuthSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
         var data = dataAccess.findAuthData(testAuthData.authToken());
@@ -108,7 +109,7 @@ public class DAOTests {
     }
 
     @Test
-    public void findAuthBadAuth() throws DataAccessException {
+    public void findAuthBadAuth() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
         var data = dataAccess.findAuthData("3d9a9c9b-6745-4a7f-8cfc-bc11c8ab2b35");
@@ -121,12 +122,12 @@ public class DAOTests {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
 
-        Assertions.assertThrows(DataAccessException.class,
+        Assertions.assertThrows(AuthorizationException.class,
                 () -> dataAccess.findAuthData("badAuth"));
     }
 
     @Test
-    public void deleteAuthSuccess() throws DataAccessException {
+    public void deleteAuthSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
         dataAccess.deleteAuth(testAuthData.authToken());
@@ -136,7 +137,7 @@ public class DAOTests {
     }
 
     @Test
-    public void deleteAuthNonToken() throws DataAccessException {
+    public void deleteAuthNonToken() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
         dataAccess.deleteAuth("3d9a9c9b-6745-4a7f-8cfc-bc11c8ab2b35");
@@ -218,6 +219,25 @@ public class DAOTests {
                 () -> dataAccess.updateGame(new GameData(testGameData.gameID(), "badUs3r", null,
                         testGameData.gameName(), testGameData.game())));
 
+    }
+
+    @Test
+    public void listGamesSuccess() throws DataAccessException {
+        dataAccess.createGame(testGameData);
+        var newGameData =
+                new GameData(testGameData.gameID() + 1, null, null, "newgame", new ChessGame());
+        dataAccess.createGame(newGameData);
+        var games = dataAccess.listGames();
+
+        Assertions.assertEquals(games.get(0), testGameData);
+        Assertions.assertEquals(games.get(1), newGameData);
+    }
+
+    @Test
+    public void listGamesNoGames() throws DataAccessException {
+        var games = dataAccess.listGames();
+
+        Assertions.assertTrue(games.isEmpty());
     }
 
     @Test

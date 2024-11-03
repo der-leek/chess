@@ -14,7 +14,7 @@ public interface DataAccess {
 
     void deleteAuth(String authToken) throws DataAccessException;
 
-    ArrayList<GameData> listGames();
+    ArrayList<GameData> listGames() throws DataAccessException;
 
     GameData findGameData(Integer gameID) throws DataAccessException;
 
