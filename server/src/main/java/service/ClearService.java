@@ -10,15 +10,15 @@ public class ClearService {
         this.dataAccess = dataAccess;
     }
 
-    public void clearUsers() {
+    public void clearUsers() throws DataAccessException {
         dataAccess.clearUserDAO();
     }
 
-    public void clearAuths() {
+    public void clearAuths() throws DataAccessException {
         dataAccess.clearAuthDAO();
     }
 
-    public void clearGames() {
+    public void clearGames() throws DataAccessException {
         dataAccess.clearGameDAO();
     }
 }

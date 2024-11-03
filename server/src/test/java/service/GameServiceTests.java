@@ -21,7 +21,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void createGameInvalidAuth() {
+    public void createGameInvalidAuth() throws DataAccessException {
         dataAccess.createAuth(new AuthData("auth", "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
@@ -31,7 +31,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void createGameSuccess() throws AuthorizationException {
+    public void createGameSuccess() throws AuthorizationException, DataAccessException {
         String authToken = "auth";
         dataAccess.createAuth(new AuthData(authToken, "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
@@ -49,7 +49,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void joinGameInvalidAuth() {
+    public void joinGameInvalidAuth() throws DataAccessException {
         dataAccess.createAuth(new AuthData("auth", "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
@@ -59,7 +59,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void joinGameInvalidGameID() {
+    public void joinGameInvalidGameID() throws DataAccessException {
         String authToken = "auth";
         dataAccess.createAuth(new AuthData(authToken, "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
@@ -74,7 +74,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void joinGameUsernameTaken() {
+    public void joinGameUsernameTaken() throws DataAccessException {
         String authToken = "auth";
         dataAccess.createAuth(new AuthData(authToken, "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
@@ -125,7 +125,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void listGamesInvalidAuth() {
+    public void listGamesInvalidAuth() throws DataAccessException {
         dataAccess.createAuth(new AuthData("auth", "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
@@ -134,7 +134,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void listGamesSuccess() throws AuthorizationException {
+    public void listGamesSuccess() throws AuthorizationException, DataAccessException {
         String authToken = "auth";
         dataAccess.createAuth(new AuthData(authToken, "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());

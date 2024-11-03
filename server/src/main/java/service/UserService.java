@@ -5,6 +5,7 @@ import dataaccess.*;
 import requests.*;
 import responses.*;
 import java.util.UUID;
+import org.mindrot.jbcrypt.BCrypt;
 import com.google.gson.JsonSyntaxException;
 
 public class UserService {
@@ -42,7 +43,7 @@ public class UserService {
             throw new DataAccessException("Invalid username: " + username);
         }
 
-        if (!userData.password().equals(req.password())) {
+        if (!BCrypt.checkpw(req.password(), userData.password())) {
             throw new DataAccessException("Invalid password");
         }
 
@@ -50,7 +51,7 @@ public class UserService {
         return new LoginResponse(username, authData.authToken());
     }
 
-    public void logout(LogoutRequest req) throws AuthorizationException {
+    public void logout(LogoutRequest req) throws AuthorizationException, DataAccessException {
         var authData = dataAccess.findAuthData(req.authToken());
 
         if (authData == null) {
@@ -60,7 +61,7 @@ public class UserService {
         dataAccess.deleteAuth(authData.authToken());
     }
 
-    private AuthData createAuth(String username) {
+    private AuthData createAuth(String username) throws DataAccessException {
         String authToken = UUID.randomUUID().toString();
         var authData = new AuthData(authToken, username);
         dataAccess.createAuth(authData);

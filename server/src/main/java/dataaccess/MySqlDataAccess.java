@@ -4,6 +4,7 @@ import model.*;
 import java.sql.*;
 import chess.ChessGame;
 import server.Serializer;
+import service.AuthorizationException;
 import java.util.ArrayList;
 import org.mindrot.jbcrypt.BCrypt;
 import com.google.gson.JsonSyntaxException;
@@ -40,13 +41,13 @@ public class MySqlDataAccess implements DataAccess {
     public void createUser(UserData data) throws DataAccessException {
         boolean cleanUsername = data.username().matches("[a-zA-Z]+");
         boolean cleanPassword = data.password().matches("[a-zA-Z]+");
-        boolean cleanEmail = data.email().matches("^[\\w\\.-]+@[a-zA-Z\\d\\.-]+\\.[a-zA-Z]{2,}$");
+        boolean cleanEmail = data.email().matches("^[\\w\\.-@]+");
 
         if (!cleanUsername || !cleanPassword || !cleanEmail) {
             throw new DataAccessException("Invalid credentials. No special characters allowed");
         }
 
-        String statement = "INSERT INTO userdata (username, password, email) VALUES (?, ?, ?)";
+        String statement = "REPLACE INTO userdata (username, password, email) VALUES (?, ?, ?)";
         try (var conn = DatabaseManager.getConnection();
                 var preparedStatement = conn.prepareStatement(statement)) {
             String hashedPassword = BCrypt.hashpw(data.password(), BCrypt.gensalt());
@@ -59,10 +60,10 @@ public class MySqlDataAccess implements DataAccess {
         }
     }
 
-    public AuthData findAuthData(String authToken) throws DataAccessException {
+    public AuthData findAuthData(String authToken) throws AuthorizationException, DataAccessException {
         if (!authToken.matches(
                 "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
-            throw new DataAccessException("Invalid authToken");
+            throw new AuthorizationException("Invalid authToken");
         }
 
         String query = "SELECT * FROM authdata WHERE authToken=?";
@@ -91,7 +92,7 @@ public class MySqlDataAccess implements DataAccess {
             throw new DataAccessException("Invalid credentials");
         }
 
-        String statement = "INSERT INTO authdata (authToken, username) VALUES (?, ?)";
+        String statement = "REPLACE INTO authdata (authToken, username) VALUES (?, ?)";
         try (var conn = DatabaseManager.getConnection();
                 var preparedStatement = conn.prepareStatement(statement)) {
             preparedStatement.setString(1, data.authToken());
@@ -171,7 +172,7 @@ public class MySqlDataAccess implements DataAccess {
 
     public void createGame(GameData data) throws DataAccessException {
         boolean cleanGameID = (Object) data.gameID() instanceof Integer;
-        boolean cleanGameName = data.gameName().matches("[a-zA-Z]+");
+        boolean cleanGameName = data.gameName().matches("[^;]+");
         String game;
 
         try {
@@ -200,22 +201,22 @@ public class MySqlDataAccess implements DataAccess {
         }
     }
 
-    public void updateGame(GameData data) throws DataAccessException {
+    public void updateGame(GameData data) throws AuthorizationException, DataAccessException {
         boolean cleanGameID = (Object) data.gameID() instanceof Integer;
         boolean cleanWhiteUsername =
                 data.whiteUsername() == null || data.whiteUsername().matches("[a-zA-Z]+");
         boolean cleanBlackUsername =
                 data.blackUsername() == null || data.blackUsername().matches("[a-zA-Z]+");
-        boolean cleanGameName = data.gameName().matches("[a-zA-Z]+");
+        boolean cleanGameName = data.gameName().matches("[^;]+");
         String game;
 
         try {
             game = new Serializer<ChessGame>().toJson(data.game());
         } catch (JsonSyntaxException ex) {
-            throw new DataAccessException("Invalid ChessGame Object");
+            throw new AuthorizationException("Invalid ChessGame Object");
         }
         if (!cleanGameID || !cleanWhiteUsername || !cleanBlackUsername || !cleanGameName) {
-            throw new DataAccessException("Invalid gameData");
+            throw new AuthorizationException("Invalid gameData");
         }
 
         String statement =

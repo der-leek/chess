@@ -16,7 +16,7 @@ public class GameService {
     }
 
     public CreateGameResponse createGame(String authToken, CreateGameRequest req)
-            throws AuthorizationException {
+            throws AuthorizationException, DataAccessException {
         authorize(authToken);
 
         int gameIDLimit = 9999;
@@ -49,12 +49,12 @@ public class GameService {
         dataAccess.updateGame(joinedGame);
     }
 
-    public ListGameResponse listGames(String authToken) throws AuthorizationException {
+    public ListGameResponse listGames(String authToken) throws AuthorizationException, DataAccessException {
         authorize(authToken);
         return new ListGameResponse(dataAccess.listGames());
     }
 
-    private AuthData authorize(String authToken) throws AuthorizationException {
+    private AuthData authorize(String authToken) throws AuthorizationException, DataAccessException {
         var authData = dataAccess.findAuthData(authToken);
         if (authData == null) {
             throw new AuthorizationException("Unauthorized");
@@ -62,7 +62,7 @@ public class GameService {
         return authData;
     }
 
-    private Integer createRandomGameID(int upperLimit) {
+    private Integer createRandomGameID(int upperLimit) throws DataAccessException {
         var random = new Random();
         int gameID = random.nextInt(upperLimit) + 1;
 

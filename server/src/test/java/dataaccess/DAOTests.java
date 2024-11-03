@@ -40,12 +40,16 @@ public class DAOTests {
     }
 
     @Test
-    public void createNewUserDuplicateUsername() throws DataAccessException {
+    public void createNewUserOverwrite() throws DataAccessException {
         dataAccess.createUser(testUserData);
+        dataAccess.createUser(
+                new UserData(testUserData.username(), testUserData.password(), "new@mail.com"));
+        var data = dataAccess.findUserData(testUserData.username());
 
-        Assertions.assertThrows(DataAccessException.class,
-                () -> dataAccess.createUser(new UserData(testUserData.username(),
-                        testUserData.password(), testUserData.email())));
+        Assertions.assertEquals(testUserData.username(), data.username());
+        Assertions.assertTrue(BCrypt.checkpw(testUserData.password(), data.password()));
+        Assertions.assertEquals("new@mail.com", data.email());
+        Assertions.assertNotEquals(testUserData.password(), data.password());
     }
 
     @Test
@@ -122,7 +126,7 @@ public class DAOTests {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
 
-        Assertions.assertThrows(AuthorizationException.class,
+        Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.findAuthData("badAuth"));
     }
 
@@ -167,11 +171,18 @@ public class DAOTests {
     }
 
     @Test
-    public void createGameDuplicate() throws DataAccessException {
+    public void createGameOverwrite() throws DataAccessException {
         dataAccess.createGame(testGameData);
+        dataAccess.createGame(new GameData(testGameData.gameID(), null, null, "differentGameName",
+                testGameData.game()));
+        var data = dataAccess.findGameData(testGameData.gameID());
 
-        Assertions.assertThrows(DataAccessException.class,
-                () -> dataAccess.createGame(testGameData));
+        Assertions.assertEquals(testGameData.gameID(), data.gameID());
+        Assertions.assertEquals(testGameData.whiteUsername(), data.whiteUsername());
+        Assertions.assertEquals(testGameData.blackUsername(), data.blackUsername());
+        Assertions.assertEquals("differentGameName", data.gameName());
+        Assertions.assertNotEquals(testGameData.gameName(), data.gameName());
+        Assertions.assertEquals(testGameData.game(), data.game());
     }
 
     @Test
@@ -196,7 +207,7 @@ public class DAOTests {
     }
 
     @Test
-    public void updateGameSuccess() throws DataAccessException {
+    public void updateGameSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createGame(testGameData);
         dataAccess.updateGame(new GameData(testGameData.gameID(), testUserData.username(), null,

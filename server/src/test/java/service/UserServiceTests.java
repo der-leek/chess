@@ -19,7 +19,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void registerUserExists() {
+    public void registerUserExists() throws DataAccessException {
         var request = new RegisterRequest("user", "pass", "email");
         dataAccess
                 .createUser(new UserData(request.username(), request.password(), request.email()));
@@ -45,7 +45,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void loginUserExists() {
+    public void loginUserExists() throws DataAccessException {
         var request = new LoginRequest("us3r", "pass");
 
         String correctUsername = "user";
@@ -56,7 +56,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void loginWrongPassword() {
+    public void loginWrongPassword() throws DataAccessException {
         var request = new LoginRequest("user", "p4ss");
 
         String correctPassword = "pass";
@@ -79,7 +79,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void logoutUnauthorized() throws AuthorizationException {
+    public void logoutUnauthorized() throws AuthorizationException, DataAccessException {
         var authToken = "auth";
         var authData = new AuthData(authToken, "user");
         dataAccess.createAuth(authData);
@@ -90,7 +90,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void logoutSuccessful() throws AuthorizationException {
+    public void logoutSuccessful() throws AuthorizationException, DataAccessException {
         var authToken = "auth";
         var authData = new AuthData(authToken, "user");
         dataAccess.createAuth(authData);

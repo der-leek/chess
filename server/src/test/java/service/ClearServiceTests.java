@@ -13,7 +13,7 @@ public class ClearServiceTests {
     private ClearService service;
 
     @Test
-    public void clearUsersSuccess() {
+    public void clearUsersSuccess() throws DataAccessException {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
@@ -31,7 +31,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearAuthsSuccess() {
+    public void clearAuthsSuccess() throws DataAccessException {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
@@ -49,7 +49,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearGamesSuccess() {
+    public void clearGamesSuccess() throws DataAccessException {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 

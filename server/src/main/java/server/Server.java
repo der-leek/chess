@@ -14,7 +14,11 @@ public class Server {
     private final GameService gameService;
 
     public Server() {
-        dataAccess = new MemoryDataAccess();
+        try {
+            dataAccess = new MySqlDataAccess();
+        } catch (DataAccessException ex) {
+            throw new RuntimeException(ex.getMessage());
+        }
         clearService = new ClearService(dataAccess);
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
@@ -43,7 +47,7 @@ public class Server {
         Spark.get("/game", this::listGames);
     }
 
-    private Object clear(Request req, Response res) {
+    private Object clear(Request req, Response res) throws DataAccessException {
         res.type("application/json");
 
         if (!req.body().isEmpty()) {
@@ -52,12 +56,12 @@ public class Server {
         }
 
         try {
-            clearService.clearUsers();
-            clearService.clearGames();
             clearService.clearAuths();
+            clearService.clearGames();
+            clearService.clearUsers();
         } catch (RuntimeException e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
@@ -80,7 +84,7 @@ public class Server {
                     .toJson(new ErrorResponse("Error: already taken"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
@@ -102,7 +106,7 @@ public class Server {
             return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
@@ -124,7 +128,7 @@ public class Server {
             return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
@@ -147,7 +151,7 @@ public class Server {
             return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
@@ -177,14 +181,14 @@ public class Server {
             return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.toString()));
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
         return "{}";
     }
 
-    private Object listGames(Request req, Response res) {
+    private Object listGames(Request req, Response res) throws DataAccessException {
         res.type("application/json");
         ListGameResponse response;
 
@@ -198,6 +202,9 @@ public class Server {
         } catch (AuthorizationException e) {
             res.status(401);
             return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+        } catch (Throwable e) {
+            res.status(500);
+            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
         }
 
         return new Serializer<ListGameResponse>().toJson(response);

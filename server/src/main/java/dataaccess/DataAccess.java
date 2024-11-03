@@ -1,6 +1,7 @@
 package dataaccess;
 
 import model.*;
+import service.AuthorizationException;
 import java.util.ArrayList;
 
 public interface DataAccess {
@@ -8,7 +9,7 @@ public interface DataAccess {
 
     void createUser(UserData data) throws DataAccessException;
 
-    AuthData findAuthData(String authToken) throws DataAccessException;
+    AuthData findAuthData(String authToken) throws AuthorizationException, DataAccessException;
 
     void createAuth(AuthData data) throws DataAccessException;
 
@@ -20,7 +21,7 @@ public interface DataAccess {
 
     void createGame(GameData data) throws DataAccessException;
 
-    void updateGame(GameData data) throws DataAccessException;
+    void updateGame(GameData data) throws AuthorizationException, DataAccessException;
 
     void clearUserDAO() throws DataAccessException;
 
