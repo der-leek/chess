@@ -126,7 +126,7 @@ public class DAOTests {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
 
-        Assertions.assertThrows(DataAccessException.class,
+        Assertions.assertThrows(AuthorizationException.class,
                 () -> dataAccess.findAuthData("badAuth"));
     }
 
@@ -173,16 +173,10 @@ public class DAOTests {
     @Test
     public void createGameOverwrite() throws DataAccessException {
         dataAccess.createGame(testGameData);
-        dataAccess.createGame(new GameData(testGameData.gameID(), null, null, "differentGameName",
-                testGameData.game()));
-        var data = dataAccess.findGameData(testGameData.gameID());
+        Assertions.assertThrows(DataAccessException.class,
+                () -> dataAccess.createGame(new GameData(testGameData.gameID(), null, null,
+                        "differentGameName", testGameData.game())));
 
-        Assertions.assertEquals(testGameData.gameID(), data.gameID());
-        Assertions.assertEquals(testGameData.whiteUsername(), data.whiteUsername());
-        Assertions.assertEquals(testGameData.blackUsername(), data.blackUsername());
-        Assertions.assertEquals("differentGameName", data.gameName());
-        Assertions.assertNotEquals(testGameData.gameName(), data.gameName());
-        Assertions.assertEquals(testGameData.game(), data.game());
     }
 
     @Test
@@ -226,7 +220,7 @@ public class DAOTests {
         dataAccess.createUser(testUserData);
         dataAccess.createGame(testGameData);
 
-        Assertions.assertThrows(DataAccessException.class,
+        Assertions.assertThrows(AuthorizationException.class,
                 () -> dataAccess.updateGame(new GameData(testGameData.gameID(), "badUs3r", null,
                         testGameData.gameName(), testGameData.game())));
 
