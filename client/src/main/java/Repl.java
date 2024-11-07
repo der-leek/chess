@@ -1,62 +1,53 @@
 import java.util.Scanner;
 
 public class Repl {
-    private Scanner scanner;
     private boolean LOGGED_IN;
+    private Scanner scanner;
+    private String user;
 
     public Repl(Scanner scanner) {
-        this.scanner = scanner;
         LOGGED_IN = false;
+        this.scanner = scanner;
     }
 
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
             Repl repl = new Repl(scanner);
-            repl.printMenuNotLogin();
-            repl.runMenuNotLogin();
+            repl.printPreLoginMenu();
+            repl.preLoginMenu();
+            repl.printPostLoginMenu();
+            repl.postLoginMenu();
         }
     }
 
-    private void printMenuNotLogin() {
-        System.out.printf("%nWelcome to this chess experience! Enter a number to proceed:%n");
+    private void printPreLoginMenu() {
+        System.out.printf("%nWelcome to CS240 Chess! Enter a number to proceed:%n");
         System.out.println("1: Register");
         System.out.println("2: Login");
         System.out.println("3: Help");
         System.out.printf("4: Quit%n>>> ");
     }
 
-    private void runMenuNotLogin() {
+    private void preLoginMenu() {
         while (!LOGGED_IN) {
             String line = scanner.nextLine().trim();
             System.out.println();
 
             switch (line) {
-                case ("register"):
-                case ("Register"):
                 case ("1"):
                     register();
                     break;
-
-                case ("login"):
-                case ("Login"):
                 case ("2"):
                     login();
                     break;
-
-                case ("help"):
-                case ("Help"):
                 case ("3"):
                     help();
                     break;
-
-                case ("quit"):
-                case ("Quit"):
                 case ("4"):
                     System.exit(0);
                     break;
-
                 default:
-                    printMenuNotLogin();
+                    printPreLoginMenu();
                     break;
             }
         }
@@ -64,7 +55,7 @@ public class Repl {
 
     private void register() {
         System.out.printf("Choose a username: ");
-        String username = scanner.nextLine().trim();
+        user = scanner.nextLine().trim();
         System.out.printf("Choose a password: ");
         String password = scanner.nextLine().trim();
         System.out.printf("Enter your email: ");
@@ -74,17 +65,93 @@ public class Repl {
 
     private void login() {
         System.out.printf("Username: ");
-        String username = scanner.nextLine().trim();
+        user = scanner.nextLine().trim();
         System.out.printf("Password: ");
         String password = scanner.nextLine().trim();
         LOGGED_IN = true;
     }
 
     private void help() {
-        System.out.println("1: Register an account with username, password, email");
-        System.out.println("2: Login to an existing account with username, password");
+        System.out.println("1: Register an account with <USERNAME>, <PASSWORD>, <EMAIL>");
+        System.out.println("2: Login to an existing account with <USERNAME>, <PASSWORD>");
         System.out.println("3: Display this message again");
         System.out.printf("4: Exit the application%n>>> ");
+    }
+
+    private void printPostLoginMenu() {
+        System.out.printf("%nWelcome, %s. Enter a number to proceed:%n", user);
+        System.out.println("1: Help");
+        System.out.println("2: Logout");
+        System.out.println("3: Create Game");
+        System.out.println("4: List Games");
+        System.out.println("5: Play Game");
+        System.out.printf("6: Observe Game%n>>> ");
+    }
+
+    private void postLoginMenu() {
+        String line = scanner.nextLine().trim();
+        System.out.println();
+
+        switch (line) {
+            case ("1"):
+                loginHelp();
+                postLoginMenu();
+                break;
+            case ("2"):
+                logout();
+                printPreLoginMenu();
+                preLoginMenu();
+                break;
+            case ("3"):
+                createGame();
+                break;
+            case ("4"):
+                listGames();
+                break;
+            case ("5"):
+                playGame();
+                break;
+            case ("6"):
+                observeGame();
+                break;
+            default:
+                printPostLoginMenu();
+                break;
+        }
+    }
+
+    private void loginHelp() {
+        System.out.println("1: Display this message again");
+        System.out.println("2: Logout and return to the start menu");
+        System.out.println("3: Create a new chess game with <GAME_NAME>");
+        System.out.println("4: List all games on the server");
+        System.out.println(
+                "5: Play a pre-existing game of chess with <GAME_ID> <TEAM_COLOR>[BLACK|WHITE]");
+        System.out.printf("6: Observe a chess game with <GAME_ID>%n>>> ");
+    }
+
+    private void logout() {
+        user = null;
+        LOGGED_IN = false;
+    }
+
+    private void createGame() {
+        System.out.printf("Game Name: ");
+        String gameName = scanner.nextLine().trim();
+    }
+
+    private void listGames() {}
+
+    private void playGame() {
+        System.out.printf("Game ID: ");
+        String gameID = scanner.nextLine().trim();
+        System.out.printf("Team Color: ");
+        String teamColor = scanner.nextLine().trim();
+    }
+
+    private void observeGame() {
+        System.out.printf("Game ID: ");
+        String gameID = scanner.nextLine().trim();
     }
 }
 
