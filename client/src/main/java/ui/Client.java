@@ -1,22 +1,23 @@
+package ui;
 import java.util.Scanner;
 
-public class Repl {
+public class Client {
     private boolean LOGGED_IN;
     private Scanner scanner;
     private String user;
 
-    public Repl(Scanner scanner) {
+    public Client(Scanner scanner) {
         LOGGED_IN = false;
         this.scanner = scanner;
     }
 
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-            Repl repl = new Repl(scanner);
-            repl.printPreLoginMenu();
-            repl.preLoginMenu();
-            repl.printPostLoginMenu();
-            repl.postLoginMenu();
+            Client client = new Client(scanner);
+            client.printPreLoginMenu();
+            client.preLoginMenu();
+            client.printPostLoginMenu();
+            client.postLoginMenu();
         }
     }
 
