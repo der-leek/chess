@@ -1,14 +1,18 @@
 package ui;
+
 import java.util.Scanner;
+import chess.ChessBoard;
 
 public class Client {
     private boolean LOGGED_IN;
     private Scanner scanner;
     private String user;
+    private final BoardRenderer boardRenderer;
 
     public Client(Scanner scanner) {
-        LOGGED_IN = false;
+        boardRenderer = new BoardRenderer(new ChessBoard());
         this.scanner = scanner;
+        LOGGED_IN = false;
     }
 
     public static void main(String[] args) {
@@ -148,11 +152,17 @@ public class Client {
         String gameID = scanner.nextLine().trim();
         System.out.printf("Team Color: ");
         String teamColor = scanner.nextLine().trim();
+        boardRenderer.drawBoard(false);
+        System.out.println();
+        boardRenderer.drawBoard(true);
     }
 
     private void observeGame() {
         System.out.printf("Game ID: ");
         String gameID = scanner.nextLine().trim();
+        boardRenderer.drawBoard(false);
+        System.out.println();
+        boardRenderer.drawBoard(true);
     }
 }
 
