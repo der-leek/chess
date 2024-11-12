@@ -1,4 +1,4 @@
-package server;
+package serializer;
 
 import com.google.gson.*;
 

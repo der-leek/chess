@@ -3,7 +3,7 @@ package dataaccess;
 import model.*;
 import java.sql.*;
 import chess.ChessGame;
-import server.Serializer;
+import serializer.*;
 import service.AuthorizationException;
 import java.util.ArrayList;
 import org.mindrot.jbcrypt.BCrypt;
@@ -40,7 +40,7 @@ public class MySqlDataAccess implements DataAccess {
 
     public void createUser(UserData data) throws DataAccessException {
         boolean cleanUsername = data.username().matches("[a-zA-Z]+");
-        boolean cleanPassword = data.password().matches("[a-zA-Z]+");
+        boolean cleanPassword = data.password().matches("[a-zA-Z0-9_]+");
         boolean cleanEmail = data.email().matches("^[\\w\\.-@]+");
 
         if (!cleanUsername || !cleanPassword || !cleanEmail) {

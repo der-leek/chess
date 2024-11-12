@@ -1,4 +1,4 @@
-package server;
+package serializer;
 
 import responses.ErrorResponse;
 import org.junit.jupiter.api.Test;

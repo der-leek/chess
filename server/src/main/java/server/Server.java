@@ -5,6 +5,7 @@ import service.*;
 import dataaccess.*;
 import requests.*;
 import responses.*;
+import serializer.*;
 import com.google.gson.JsonSyntaxException;
 
 public class Server {
