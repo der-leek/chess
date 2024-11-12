@@ -23,6 +23,7 @@ public class BoardRenderer {
     }
 
     public void drawBoard(boolean reversed) {
+        out.print(EscapeSequences.SET_TEXT_BOLD);
         drawHeader(reversed);
 
         int i = (reversed ? 1 : boardSize);
@@ -62,7 +63,6 @@ public class BoardRenderer {
                 : EscapeSequences.SET_TEXT_COLOR_BLUE;
 
         output.append(pieceColor);
-        output.append(EscapeSequences.SET_TEXT_BOLD);
         output.append(EscapeSequences.SET_TEXT_ITALIC);
         output.append(String.format(" %s ", piece.toString()));
     }
