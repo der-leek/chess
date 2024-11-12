@@ -13,6 +13,7 @@ public class Server {
     private final ClearService clearService;
     private final UserService userService;
     private final GameService gameService;
+    private final Serializer serializer = new Serializer();
 
     public Server() {
         try {
@@ -53,7 +54,7 @@ public class Server {
 
         if (!req.body().isEmpty()) {
             res.status(400);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         }
 
         try {
@@ -62,7 +63,7 @@ public class Server {
             clearService.clearUsers();
         } catch (RuntimeException e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
+            return serializer.toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
@@ -75,21 +76,21 @@ public class Server {
 
         try {
             response = userService.register(
-                    new Serializer<RegisterRequest>().fromJson(req.body(), RegisterRequest.class));
+                    serializer.fromJson(req.body(), RegisterRequest.class));
         } catch (JsonSyntaxException e) {
             res.status(400);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         } catch (DataAccessException e) {
             res.status(403);
-            return new Serializer<ErrorResponse>()
+            return new Serializer()
                     .toJson(new ErrorResponse("Error: already taken"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
+            return serializer.toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
-        return new Serializer<LoginResponse>().toJson(response);
+        return serializer.toJson(response);
     }
 
     private Object login(Request req, Response res) {
@@ -98,20 +99,20 @@ public class Server {
 
         try {
             response = userService
-                    .login(new Serializer<LoginRequest>().fromJson(req.body(), LoginRequest.class));
+                    .login(serializer.fromJson(req.body(), LoginRequest.class));
         } catch (JsonSyntaxException e) {
             res.status(400);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         } catch (DataAccessException e) {
             res.status(401);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+            return serializer.toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
+            return serializer.toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
-        return new Serializer<LoginResponse>().toJson(response);
+        return serializer.toJson(response);
     }
 
     private Object logout(Request req, Response res) {
@@ -119,17 +120,17 @@ public class Server {
 
         if (!req.body().isEmpty()) {
             res.status(400);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         }
 
         try {
             userService.logout(new LogoutRequest(req.headers("authorization")));
         } catch (AuthorizationException e) {
             res.status(401);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+            return serializer.toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
+            return serializer.toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
@@ -142,21 +143,21 @@ public class Server {
 
         try {
             response = gameService.createGame(req.headers("authorization"),
-                    new Serializer<CreateGameRequest>().fromJson(req.body(),
+                    serializer.fromJson(req.body(),
                             CreateGameRequest.class));
         } catch (JsonSyntaxException e) {
             res.status(400);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         } catch (AuthorizationException e) {
             res.status(401);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+            return serializer.toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
+            return serializer.toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
-        return new Serializer<CreateGameResponse>().toJson(response);
+        return serializer.toJson(response);
     }
 
     private Object joinGame(Request req, Response res) {
@@ -164,25 +165,25 @@ public class Server {
 
         if (req.body().isEmpty()) {
             res.status(400);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         }
 
         try {
             gameService.joinGame(req.headers("authorization"),
-                    new Serializer<JoinGameRequest>().fromJson(req.body(), JoinGameRequest.class));
+                    serializer.fromJson(req.body(), JoinGameRequest.class));
         } catch (AuthorizationException e) {
             res.status(401);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+            return serializer.toJson(new ErrorResponse("Error: unauthorized"));
         } catch (DataAccessException e) {
             res.status(403);
-            return new Serializer<ErrorResponse>()
+            return new Serializer()
                     .toJson(new ErrorResponse("Error: already taken"));
         } catch (NullPointerException e) {
             res.status(400);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
+            return serializer.toJson(new ErrorResponse(e.getMessage()));
         }
 
         res.status(200);
@@ -195,19 +196,19 @@ public class Server {
 
         if (!req.body().isEmpty()) {
             res.status(400);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         }
 
         try {
             response = gameService.listGames(req.headers("authorization"));
         } catch (AuthorizationException e) {
             res.status(401);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse("Error: unauthorized"));
+            return serializer.toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
             res.status(500);
-            return new Serializer<ErrorResponse>().toJson(new ErrorResponse(e.getMessage()));
+            return serializer.toJson(new ErrorResponse(e.getMessage()));
         }
 
-        return new Serializer<ListGameResponse>().toJson(response);
+        return serializer.toJson(response);
     }
 }

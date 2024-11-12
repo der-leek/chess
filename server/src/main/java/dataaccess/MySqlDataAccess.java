@@ -2,14 +2,16 @@ package dataaccess;
 
 import model.*;
 import java.sql.*;
-import chess.ChessGame;
 import serializer.*;
-import service.AuthorizationException;
+import chess.ChessGame;
 import java.util.ArrayList;
 import org.mindrot.jbcrypt.BCrypt;
+import service.AuthorizationException;
 import com.google.gson.JsonSyntaxException;
 
 public class MySqlDataAccess implements DataAccess {
+
+    private final Serializer serializer = new Serializer();
 
     public MySqlDataAccess() throws DataAccessException {
         configureDatabase();
@@ -60,7 +62,8 @@ public class MySqlDataAccess implements DataAccess {
         }
     }
 
-    public AuthData findAuthData(String authToken) throws AuthorizationException, DataAccessException {
+    public AuthData findAuthData(String authToken)
+            throws AuthorizationException, DataAccessException {
         if (!authToken.matches(
                 "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) {
             throw new AuthorizationException("Invalid authToken");
@@ -133,8 +136,8 @@ public class MySqlDataAccess implements DataAccess {
                     String whiteUsername = rs.getString("whiteUsername");
                     String blackUsername = rs.getString("blackUsername");
                     String gameName = rs.getString("gameName");
-                    ChessGame game = new Serializer<ChessGame>().fromJson(rs.getString("game"),
-                            ChessGame.class);
+                    ChessGame game =
+                            serializer.fromJson(rs.getString("game"), ChessGame.class);
 
                     games.add(new GameData(id, whiteUsername, blackUsername, gameName, game));
                 }
@@ -160,8 +163,7 @@ public class MySqlDataAccess implements DataAccess {
                 String whiteUsername = rs.getString("whiteUsername");
                 String blackUsername = rs.getString("blackUsername");
                 String gameName = rs.getString("gameName");
-                ChessGame game =
-                        new Serializer<ChessGame>().fromJson(rs.getString("game"), ChessGame.class);
+                ChessGame game = serializer.fromJson(rs.getString("game"), ChessGame.class);
 
                 return new GameData(foundGameID, whiteUsername, blackUsername, gameName, game);
             }
@@ -176,7 +178,7 @@ public class MySqlDataAccess implements DataAccess {
         String game;
 
         try {
-            game = new Serializer<ChessGame>().toJson(data.game());
+            game = serializer.toJson(data.game());
         } catch (JsonSyntaxException ex) {
             throw new DataAccessException("Invalid ChessGame Object");
         }
@@ -211,7 +213,7 @@ public class MySqlDataAccess implements DataAccess {
         String game;
 
         try {
-            game = new Serializer<ChessGame>().toJson(data.game());
+            game = serializer.toJson(data.game());
         } catch (JsonSyntaxException ex) {
             throw new AuthorizationException("Invalid ChessGame Object");
         }

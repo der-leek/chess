@@ -2,18 +2,18 @@ package serializer;
 
 import com.google.gson.*;
 
-public class Serializer<T> {
+public class Serializer {
     private final Gson gson;
 
     public Serializer() {
         this.gson = new Gson();
     }
 
-    public String toJson(T obj) {
+    public String toJson(Object obj) {
         return gson.toJson(obj);
     }
 
-    public T fromJson(String json, Class<T> clazz) throws JsonSyntaxException {
-        return gson.fromJson(json, clazz);
+    public <T> T fromJson(String json, Class<T> classOfT) throws JsonSyntaxException {
+        return gson.fromJson(json, classOfT);
     }
 }
