@@ -38,4 +38,34 @@ public class ServerFacadeTests {
         Assertions.assertNotNull(result);
         Assertions.assertEquals("200", result.get("statusCode"));
     }
+
+    @Test
+    public void registerSuccess() {
+        Map<String, String> result = sf.register("der_leek", "23Der!", "der@mail.com");
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("200", result.get("statusCode"));
+
+        var body = new Serializer().fromJson(result.get("body"), Map.class);
+        Assertions.assertNotNull(body.get("authToken"));
+    }
+
+    @Test
+    public void registerBadEmail() {
+        Map<String, String> result = sf.register("der_leek", "23Der!", "@mail.com");
+
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("403", result.get("statusCode"));
+    }
+
+    @Test
+    public void registerUsernameTaken() {
+        Map<String, String> result = sf.register("der_leek", "23Der!", "der@mail.com");
+        Assertions.assertNotNull(result);
+        Assertions.assertEquals("200", result.get("statusCode"));
+
+        Map<String, String> duplicate = sf.register("der_leek", "23Der!", "der@mail.com");
+        Assertions.assertNotNull(duplicate);
+        Assertions.assertEquals("403", duplicate.get("statusCode"));
+    }
 }

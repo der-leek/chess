@@ -28,6 +28,29 @@ public class HTTP {
         return receiveResponse(http);
     }
 
+    public Map<String, String> post(String endpoint, String body)
+            throws URISyntaxException, IOException {
+        URI uri = new URI(urlString + endpoint);
+        HttpURLConnection http = (HttpURLConnection) uri.toURL().openConnection();
+
+        http.setReadTimeout(5000);
+        http.setRequestMethod("POST");
+        http.addRequestProperty("Content-Type", "application/json");
+        writeRequestBody(body, http);
+        http.connect();
+
+        return receiveResponse(http);
+    }
+
+    private void writeRequestBody(String body, HttpURLConnection http) throws IOException {
+        if (!body.isEmpty()) {
+            http.setDoOutput(true);
+            try (var outputStream = http.getOutputStream()) {
+                outputStream.write(body.getBytes());
+            }
+        }
+    }
+
     private Map<String, String> receiveResponse(HttpURLConnection http) throws IOException {
         String statusCode = Integer.toString(http.getResponseCode());
         String statusMessage = http.getResponseMessage();

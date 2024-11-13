@@ -1,18 +1,26 @@
 package ui;
 
+import server.*;
+import java.util.Map;
 import java.util.Scanner;
 import chess.ChessBoard;
+import serializer.*;
 
 public class Client {
-    private boolean LOGGED_IN;
-    private Scanner scanner;
     private String user;
+    private boolean LOGGED_IN;
+    private String authToken;
+    private final Scanner scanner;
+    private final ServerFacade serverFacade;
     private final BoardRenderer boardRenderer;
+    private final Serializer serializer = new Serializer();
 
     public Client(Scanner scanner) {
         boardRenderer = new BoardRenderer(new ChessBoard());
+        serverFacade = new ServerFacade(8080);
         this.scanner = scanner;
         LOGGED_IN = false;
+        authToken = null;
     }
 
     public static void main(String[] args) {
@@ -65,19 +73,30 @@ public class Client {
         String password = scanner.nextLine().trim();
         System.out.printf("Enter your email: ");
         String email = scanner.nextLine().trim();
+
+        var response = serverFacade.register(user, password, email);
+
+        if (response == null) {
+            System.out.println("\nThere was an error registering. Try again.\n");
+            register();
+        }
+
+        if (!response.get("statusCode").equals("200")) {
+            System.out.println("\nInvalid username. Try another.\n");
+            register();
+        }
+
+        var body = serializer.fromJson(response.get("body"), Map.class);
+        authToken = (String) body.get("authToken");
         LOGGED_IN = true;
     }
 
     private void login() {
-        System.out.printf("Username: ");
-        user = scanner.nextLine().trim();
-        System.out.printf("Password: ");
-        String password = scanner.nextLine().trim();
-        LOGGED_IN = true;
+
     }
 
     private void help() {
-        System.out.println("1: Register an account with <USERNAME>, <PASSWORD>, <EMAIL>");
+        System.out.println("1: Register an account with <USERNAME>, <PASSWORD>, <EMAIL@MAIL.COM>");
         System.out.println("2: Login to an existing account with <USERNAME>, <PASSWORD>");
         System.out.println("3: Display this message again");
         System.out.printf("4: Exit the application%n>>> ");
@@ -137,21 +156,22 @@ public class Client {
 
     private void logout() {
         user = null;
+        authToken = null;
         LOGGED_IN = false;
     }
 
     private void createGame() {
         System.out.printf("Game Name: ");
-        String gameName = scanner.nextLine().trim();
+        // String gameName = scanner.nextLine().trim();
     }
 
     private void listGames() {}
 
     private void playGame() {
         System.out.printf("Game ID: ");
-        String gameID = scanner.nextLine().trim();
+        // String gameID = scanner.nextLine().trim();
         System.out.printf("Team Color: ");
-        String teamColor = scanner.nextLine().trim();
+        // String teamColor = scanner.nextLine().trim();
         boardRenderer.drawBoard(false);
         System.out.println();
         boardRenderer.drawBoard(true);
@@ -159,10 +179,9 @@ public class Client {
 
     private void observeGame() {
         System.out.printf("Game ID: ");
-        String gameID = scanner.nextLine().trim();
+        // String gameID = scanner.nextLine().trim();
         boardRenderer.drawBoard(false);
         System.out.println();
         boardRenderer.drawBoard(true);
     }
 }
-

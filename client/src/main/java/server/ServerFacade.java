@@ -21,4 +21,14 @@ public class ServerFacade {
             return null;
         }
     }
+
+    public Map<String, String> register(String user, String password, String email) {
+        var body = Map.of("username", user, "password", password, "email", email);
+
+        try {
+            return http.post("user", serializer.toJson(body));
+        } catch (IOException | URISyntaxException ex) {
+            return null;
+        }
+    }
 }
