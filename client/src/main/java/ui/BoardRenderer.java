@@ -31,10 +31,10 @@ public class BoardRenderer {
         boolean condition = true;
 
         while (condition) {
-            drawRow(i, EscapeSequences.SET_BG_COLOR_LIGHT_GREY, EscapeSequences.SET_BG_COLOR_BLACK,
+            drawRow(i, EscapeSequences.SET_BG_COLOR_WHITE, EscapeSequences.SET_BG_COLOR_BLACK,
                     reversed);
             i += step;
-            drawRow(i, EscapeSequences.SET_BG_COLOR_BLACK, EscapeSequences.SET_BG_COLOR_LIGHT_GREY,
+            drawRow(i, EscapeSequences.SET_BG_COLOR_BLACK, EscapeSequences.SET_BG_COLOR_WHITE,
                     reversed);
             i += step;
             condition = (reversed ? i <= boardSize : i > 0);
