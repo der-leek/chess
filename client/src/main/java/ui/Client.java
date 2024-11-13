@@ -92,7 +92,26 @@ public class Client {
     }
 
     private void login() {
+        System.out.printf("Username: ");
+        user = scanner.nextLine().trim();
+        System.out.printf("Password: ");
+        String password = scanner.nextLine().trim();
 
+        var response = serverFacade.login(user, password);
+
+        if (response == null) {
+            System.out.println("\nThere was an error logging in. Try again.\n");
+            register();
+        }
+
+        if (!response.get("statusCode").equals("200")) {
+            System.out.println("\nInvalid credentials.\n");
+            register();
+        }
+
+        var body = serializer.fromJson(response.get("body"), Map.class);
+        authToken = (String) body.get("authToken");
+        LOGGED_IN = true;
     }
 
     private void help() {
@@ -155,6 +174,16 @@ public class Client {
     }
 
     private void logout() {
+        if (authToken == null) {
+            return;
+        }
+
+        var response = serverFacade.logout(authToken);
+        if (response == null) {
+            System.out.println("\nThere was an error logging out. Trying again...\n");
+            logout();
+        }
+
         user = null;
         authToken = null;
         LOGGED_IN = false;

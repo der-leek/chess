@@ -16,7 +16,7 @@ public class ServerFacade {
 
     public Map<String, String> clear() {
         try {
-            return http.delete("db");
+            return http.delete("db", "");
         } catch (IOException | URISyntaxException ex) {
             return null;
         }
@@ -31,4 +31,29 @@ public class ServerFacade {
             return null;
         }
     }
+
+    public Map<String, String> login(String user, String password) {
+        var body = Map.of("username", user, "password", password);
+
+        try {
+            return http.post("session", serializer.toJson(body));
+        } catch (IOException | URISyntaxException ex) {
+            return null;
+        }
+    }
+
+    public Map<String, String> logout(String authToken) {
+        try {
+            return http.delete("session", authToken);
+        } catch (IOException | URISyntaxException ex) {
+            return null;
+        }
+    }
+
+    public void createGame() {}
+
+    public void joinGame() {}
+
+    public void listGames() {}
+
 }

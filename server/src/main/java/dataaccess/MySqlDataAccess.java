@@ -12,13 +12,14 @@ import com.google.gson.JsonSyntaxException;
 public class MySqlDataAccess implements DataAccess {
 
     private final Serializer serializer = new Serializer();
+    private final String usernameRegex = "[\\w\\d\\.-]+";
 
     public MySqlDataAccess() throws DataAccessException {
         configureDatabase();
     }
 
     public UserData findUserData(String username) throws DataAccessException {
-        if (!username.matches("[a-zA-Z]+")) {
+        if (!username.matches(usernameRegex)) {
             throw new DataAccessException("Invalid username. No special characters allowed");
         }
 
@@ -41,9 +42,9 @@ public class MySqlDataAccess implements DataAccess {
     }
 
     public void createUser(UserData data) throws DataAccessException {
-        boolean cleanUsername = data.username().matches("[a-zA-Z]+");
-        boolean cleanPassword = data.password().matches("[a-zA-Z0-9_]+");
-        boolean cleanEmail = data.email().matches("^[\\w\\.-@]+");
+        boolean cleanUsername = data.username().matches(usernameRegex);
+        boolean cleanPassword = data.password().matches("[\\w\\d\\.!-]+");
+        boolean cleanEmail = data.email().matches("^[\\w\\d\\.@-]+$");
 
         if (!cleanUsername || !cleanPassword || !cleanEmail) {
             throw new DataAccessException("Invalid credentials. No special characters allowed");
@@ -89,7 +90,7 @@ public class MySqlDataAccess implements DataAccess {
     public void createAuth(AuthData data) throws DataAccessException {
         boolean cleanAuthToken = data.authToken().matches(
                 "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
-        boolean cleanUsername = data.username().matches("[a-zA-Z]+");
+        boolean cleanUsername = data.username().matches(usernameRegex);
 
         if (!cleanUsername || !cleanAuthToken) {
             throw new DataAccessException("Invalid credentials");
@@ -136,8 +137,7 @@ public class MySqlDataAccess implements DataAccess {
                     String whiteUsername = rs.getString("whiteUsername");
                     String blackUsername = rs.getString("blackUsername");
                     String gameName = rs.getString("gameName");
-                    ChessGame game =
-                            serializer.fromJson(rs.getString("game"), ChessGame.class);
+                    ChessGame game = serializer.fromJson(rs.getString("game"), ChessGame.class);
 
                     games.add(new GameData(id, whiteUsername, blackUsername, gameName, game));
                 }
@@ -206,9 +206,9 @@ public class MySqlDataAccess implements DataAccess {
     public void updateGame(GameData data) throws AuthorizationException, DataAccessException {
         boolean cleanGameID = (Object) data.gameID() instanceof Integer;
         boolean cleanWhiteUsername =
-                data.whiteUsername() == null || data.whiteUsername().matches("[a-zA-Z]+");
+                data.whiteUsername() == null || data.whiteUsername().matches(usernameRegex);
         boolean cleanBlackUsername =
-                data.blackUsername() == null || data.blackUsername().matches("[a-zA-Z]+");
+                data.blackUsername() == null || data.blackUsername().matches(usernameRegex);
         boolean cleanGameName = data.gameName().matches("[^;]+");
         String game;
 

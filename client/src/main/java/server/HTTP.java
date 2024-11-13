@@ -17,12 +17,13 @@ public class HTTP {
         urlString = "http://localhost:" + port + "/";
     }
 
-    public Map<String, String> delete(String endpoint) throws URISyntaxException, IOException {
+    public Map<String, String> delete(String endpoint, String auth)
+            throws URISyntaxException, IOException {
         URI uri = new URI(urlString + endpoint);
         HttpURLConnection http = (HttpURLConnection) uri.toURL().openConnection();
         http.setReadTimeout(5000);
         http.setRequestMethod("DELETE");
-        http.addRequestProperty("Content-Type", "application/json");
+        http.addRequestProperty("authorization", auth);
         http.connect();
 
         return receiveResponse(http);
