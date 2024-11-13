@@ -30,9 +30,9 @@ public class Client {
             while (true) {
                 if (!client.LOGGED_IN) {
                     client.printPreLoginMenu();
-                    client.preLoginMenu();
+                    client.runPreLoginMenu();
                 } else {
-                    client.postLoginMenu();
+                    client.runPostLoginMenu();
                 }
             }
         }
@@ -46,7 +46,7 @@ public class Client {
         System.out.print("4: Quit\n>>> ");
     }
 
-    private void preLoginMenu() {
+    private void runPreLoginMenu() {
         String line = scanner.nextLine().trim();
         System.out.println();
 
@@ -85,7 +85,7 @@ public class Client {
                 continue;
             }
 
-            if (!response.get("statusCode").equals("200")) {
+            if (!response.get("statusCode").equals("200")) { // TODO: refactor error handling
                 System.out.println("\nInvalid username. Try another.\n");
                 continue;
             }
@@ -110,7 +110,7 @@ public class Client {
                 continue;
             }
 
-            if (!response.get("statusCode").equals("200")) {
+            if (!response.get("statusCode").equals("200")) { // TODO: refactor error handling
                 System.out.println("\nInvalid credentials.\n");
                 continue;
             }
@@ -133,12 +133,12 @@ public class Client {
         System.out.println("1: Help");
         System.out.println("2: Logout");
         System.out.println("3: Create Game");
-        System.out.println("4: List Games");
-        System.out.println("5: Play Game");
+        System.out.println("4: Play Game");
+        System.out.println("5: List Games");
         System.out.print("6: Observe Game\n>>> ");
     }
 
-    private void postLoginMenu() {
+    private void runPostLoginMenu() {
         printPostLoginMenu();
         String line = scanner.nextLine().trim();
         System.out.println();
@@ -154,10 +154,10 @@ public class Client {
                 createGame();
                 break;
             case ("4"):
-                listGames();
+                playGame();
                 break;
             case ("5"):
-                playGame();
+                listGames();
                 break;
             case ("6"):
                 observeGame();
@@ -193,7 +193,13 @@ public class Client {
 
     private void createGame() {
         System.out.print("Game Name: ");
-        // String gameName = scanner.nextLine().trim();
+        String gameName = scanner.nextLine().trim();
+        var response = serverFacade.createGame(gameName, authToken);
+        var statusCode = response.get("statusCode");
+
+        if (response == null || !statusCode.equals("200")) {
+            System.out.println("\nThere was an error creating that game. Please try again\n");
+        }
     }
 
     private void listGames() {}

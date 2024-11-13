@@ -1,10 +1,12 @@
 package client;
 
+import model.*;
+import serializer.*;
 import org.junit.jupiter.api.*;
 import server.Server;
-import server.ServerFacade;
 import java.util.Map;
-import serializer.*;
+import java.util.ArrayList;
+import server.ServerFacade;
 
 public class ServerFacadeTests {
 
@@ -38,6 +40,7 @@ public class ServerFacadeTests {
         var registerResult = sf.register(username, password, email);
         var body = serializer.fromJson(registerResult.get("body"), Map.class);
         authToken = (String) body.get("authToken");
+        Assertions.assertNotNull(authToken);
     }
 
     @Test
@@ -112,5 +115,30 @@ public class ServerFacadeTests {
         Map<String, String> loginResult = sf.login(username, "bad_password");
         Assertions.assertNotNull(loginResult);
         Assertions.assertEquals("401", loginResult.get("statusCode"));
+    }
+
+    @Test
+    public void createGameSuccess() {
+        Map<String, String> createResult = sf.createGame("new game", authToken);
+        Assertions.assertNotNull(createResult);
+        Assertions.assertEquals("200", createResult.get("statusCode"));
+
+        var body = serializer.fromJson(createResult.get("body"), Map.class);
+        var gameID = body.get("gameID");
+        Assertions.assertInstanceOf(Double.class, gameID);
+    }
+
+    @Test
+    public void createGameBadAuth() {
+        Map<String, String> createResult = sf.createGame("new game", "badAuth");
+        Assertions.assertNotNull(createResult);
+        Assertions.assertEquals("401", createResult.get("statusCode"));
+    }
+
+    @Test
+    public void createGameBadGameName() {
+        Map<String, String> createResult = sf.createGame("badName;", authToken);
+        Assertions.assertNotNull(createResult);
+        Assertions.assertEquals("500", createResult.get("statusCode"));
     }
 }

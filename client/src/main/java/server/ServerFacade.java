@@ -26,7 +26,7 @@ public class ServerFacade {
         var body = Map.of("username", user, "password", password, "email", email);
 
         try {
-            return http.post("user", serializer.toJson(body));
+            return http.post("user", serializer.toJson(body), "");
         } catch (IOException | URISyntaxException ex) {
             return null;
         }
@@ -36,7 +36,7 @@ public class ServerFacade {
         var body = Map.of("username", user, "password", password);
 
         try {
-            return http.post("session", serializer.toJson(body));
+            return http.post("session", serializer.toJson(body), "");
         } catch (IOException | URISyntaxException ex) {
             return null;
         }
@@ -50,10 +50,24 @@ public class ServerFacade {
         }
     }
 
-    public void createGame() {}
+    public Map<String, String> createGame(String gameName, String authToken) {
+        var body = Map.of("gameName", gameName);
+
+        try {
+            return http.post("game", serializer.toJson(body), authToken);
+        } catch (IOException | URISyntaxException ex) {
+            return null;
+        }
+    }
+
+    public Map<String, String> listGames(String authToken) {
+        try {
+            return http.get("game", authToken);
+        } catch (IOException | URISyntaxException ex) {
+            return null;
+        }
+    }
 
     public void joinGame() {}
-
-    public void listGames() {}
 
 }

@@ -29,7 +29,21 @@ public class HTTP {
         return receiveResponse(http);
     }
 
-    public Map<String, String> post(String endpoint, String body)
+    public Map<String, String> get(String endpoint, String auth)
+            throws URISyntaxException, IOException {
+        URI uri = new URI(urlString + endpoint);
+        HttpURLConnection http = (HttpURLConnection) uri.toURL().openConnection();
+
+        http.setReadTimeout(5000);
+        http.setRequestMethod("GET");
+        http.addRequestProperty("Content-Type", "application/json");
+        http.addRequestProperty("authorization", auth);
+        http.connect();
+
+        return receiveResponse(http);
+    }
+
+    public Map<String, String> post(String endpoint, String body, String auth)
             throws URISyntaxException, IOException {
         URI uri = new URI(urlString + endpoint);
         HttpURLConnection http = (HttpURLConnection) uri.toURL().openConnection();
@@ -37,6 +51,7 @@ public class HTTP {
         http.setReadTimeout(5000);
         http.setRequestMethod("POST");
         http.addRequestProperty("Content-Type", "application/json");
+        http.addRequestProperty("authorization", auth);
         writeRequestBody(body, http);
         http.connect();
 
