@@ -41,6 +41,7 @@ public class BoardRenderer {
         }
 
         drawHeader(reversed);
+        out.print(EscapeSequences.RESET_TEXT_BOLD_FAINT);
     }
 
     private void drawSquare(int x, int y, String backgroundColor) {
