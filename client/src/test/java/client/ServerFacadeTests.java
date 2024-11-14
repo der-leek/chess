@@ -1,16 +1,20 @@
 package client;
 
-import model.*;
-import serializer.*;
-import org.junit.jupiter.api.*;
-import server.Server;
-import java.util.Map;
-import chess.ChessGame;
-import java.util.HashSet;
-import java.util.ArrayList;
-import server.ServerFacade;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Map;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import com.google.gson.reflect.TypeToken;
+import chess.ChessGame;
+import model.GameData;
+import serializer.Serializer;
+import server.Server;
+import server.ServerFacade;
 
 public class ServerFacadeTests {
 
@@ -70,7 +74,7 @@ public class ServerFacadeTests {
         Map<String, String> result = sf.clear();
 
         Assertions.assertNull(result);
-        
+
         int port = server.run(0);
         sf = new ServerFacade(port);
     }
@@ -230,7 +234,7 @@ public class ServerFacadeTests {
     @Test
     public void joinGameSuccess() {
         Map<String, String> joinResult =
-                sf.joinGame(Double.toString(gameID), ChessGame.TeamColor.WHITE, authToken);
+                sf.joinGame(gameID.intValue(), ChessGame.TeamColor.WHITE, authToken);
 
         Assertions.assertNotNull(joinResult);
         Assertions.assertEquals("200", joinResult.get("statusCode"));
@@ -246,9 +250,9 @@ public class ServerFacadeTests {
 
     @Test
     public void joinGameDuplicateUsername() {
-        sf.joinGame(Double.toString(gameID), ChessGame.TeamColor.WHITE, authToken);
+        sf.joinGame(gameID.intValue(), ChessGame.TeamColor.WHITE, authToken);
         Map<String, String> joinResult =
-                sf.joinGame(Double.toString(gameID), ChessGame.TeamColor.WHITE, authToken);
+                sf.joinGame(gameID.intValue(), ChessGame.TeamColor.WHITE, authToken);
 
         Assertions.assertEquals("403", joinResult.get("statusCode"));
     }
@@ -256,7 +260,7 @@ public class ServerFacadeTests {
     @Test
     public void joinGameBadAuth() {
         Map<String, String> joinResult =
-                sf.joinGame(Double.toString(gameID), ChessGame.TeamColor.WHITE, "badAuth");
+                sf.joinGame(gameID.intValue(), ChessGame.TeamColor.WHITE, "badAuth");
 
         Assertions.assertEquals("401", joinResult.get("statusCode"));
     }

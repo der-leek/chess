@@ -1,10 +1,10 @@
 package server;
 
-import serializer.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
 import chess.ChessGame;
+import serializer.Serializer;
 
 public class ServerFacade {
 
@@ -69,7 +69,7 @@ public class ServerFacade {
         }
     }
 
-    public Map<String, String> joinGame(String gameID, ChessGame.TeamColor playerColor,
+    public Map<String, String> joinGame(Integer gameID, ChessGame.TeamColor playerColor,
             String authToken) {
         var body = Map.of("playerColor", playerColor, "gameID", gameID);
 

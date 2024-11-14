@@ -1,20 +1,22 @@
 package ui;
 
-import server.*;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 import com.google.gson.reflect.TypeToken;
 import chess.ChessBoard;
 import chess.ChessGame;
 import model.GameData;
-import serializer.*;
+import serializer.Serializer;
+import server.ServerFacade;
 
 public class Client {
     private String user;
     private boolean loggedIn;
     private String authToken;
+    private Map<Integer, Integer> dbGames;
     private final Scanner scanner;
     private final ServerFacade serverFacade;
     private final BoardRenderer boardRenderer;
@@ -23,6 +25,7 @@ public class Client {
     public Client(Scanner scanner) {
         boardRenderer = new BoardRenderer(new ChessBoard());
         serverFacade = new ServerFacade(8080);
+        dbGames = new HashMap<>();
         this.scanner = scanner;
         loggedIn = false;
         authToken = null;
@@ -68,32 +71,48 @@ public class Client {
             case ("4"):
                 System.exit(0);
                 break;
+            case ("clear"):
+                clearDB();
+                break;
             default:
-                System.out.print(">>> ");
                 break;
         }
     }
 
-    private void register() {
-        while (!loggedIn) {
-            chooseUsername();
-            String password = chooseEmail();
-            String email = choosePassword();
-
-            var response = serverFacade.register(user, password, email);
-
-            if (response == null) {
-                System.out.println("\nThere was an error registering. Please try again.");
-                continue;
-            }
-
-            if (!response.get("statusCode").equals("200")) {
-                System.out.println("\nInvalid username. Please try another.\n");
-                continue;
-            }
-
-            getAuthToken(response);
+    private void clearDB() {
+        var result = serverFacade.clear();
+        if (result == null) {
+            System.out.println("Remember to start the server!");
+            return;
         }
+
+        if (result.get("statusCode").equals("200")) {
+            System.out.println(EscapeSequences.SET_TEXT_BOLD);
+            System.out.println(EscapeSequences.SET_TEXT_ITALIC);
+            System.out.println("DB cleared!\n");
+            System.out.println(EscapeSequences.RESET_TEXT_BOLD_FAINT);
+            System.out.println(EscapeSequences.RESET_TEXT_ITALIC);
+        }
+    }
+
+    private void register() {
+        chooseUsername();
+        String password = chooseEmail();
+        String email = choosePassword();
+
+        var response = serverFacade.register(user, password, email);
+
+        if (response == null) {
+            System.out.println("\nThere was an error registering. Please try again.");
+            return;
+        }
+
+        if (!response.get("statusCode").equals("200")) {
+            System.out.println("\nInvalid username. Please try another.\n");
+            return;
+        }
+
+        getAuthToken(response);
     }
 
     private void getAuthToken(Map<String, String> response) {
@@ -120,30 +139,28 @@ public class Client {
     }
 
     private void login() {
-        while (!loggedIn) {
-            getUsername();
-            String password = getPassword();
-            var response = serverFacade.login(user, password);
-            String tryAgain = "\nThere was an error logging in. Please try again.\n";
+        getUsername();
+        String password = getPassword();
+        var response = serverFacade.login(user, password);
+        String tryAgain = "\nThere was an error logging in. Please try again.\n";
 
-            if (response == null) {
-                System.out.println(tryAgain);
-                continue;
-            }
-
-            var statusCode = response.get("statusCode");
-            if (statusCode.equals("500")) {
-                System.out.println(tryAgain);
-                continue;
-            }
-
-            if (statusCode.equals("401")) {
-                System.out.println("\nInvalid credentials. Please try again.\n");
-                continue;
-            }
-
-            getAuthToken(response);
+        if (response == null) {
+            System.out.println(tryAgain);
+            return;
         }
+
+        var statusCode = response.get("statusCode");
+        if (statusCode.equals("500")) {
+            System.out.println(tryAgain);
+            return;
+        }
+
+        if (statusCode.equals("401")) {
+            System.out.println("\nInvalid credentials. Please try again.\n");
+            return;
+        }
+
+        getAuthToken(response);
     }
 
     private void getUsername() {
@@ -204,6 +221,10 @@ public class Client {
             case ("6"):
                 observeGame();
                 break;
+            case ("clear"):
+                clearDB();
+                loggedIn = false;
+                break;
         }
     }
 
@@ -262,6 +283,8 @@ public class Client {
         if (!statusCode.equals("200")) {
             System.out.println(tryAgain);
         }
+
+        listGames();
     }
 
     private String getGameName() {
@@ -276,15 +299,17 @@ public class Client {
         }
 
         var response = serverFacade.listGames(authToken);
-        String tryAgain = "\nAn error occurred while listing games. Please try again\n";
+        String tryAgain = "\nAn error occurred while listing games. Please try again.\n";
 
         if (response == null) {
             System.out.println(tryAgain);
+            return;
         }
 
         var statusCode = response.get("statusCode");
         if (!statusCode.equals("200")) {
             System.out.println(tryAgain);
+            return;
         }
 
         printGames(response);
@@ -303,6 +328,8 @@ public class Client {
 
         for (int i = 0; i < games.size(); i++) {
             var game = games.get(i);
+            dbGames.put(i + 1, game.gameID()); // requires that games be listed before joining. Not
+                                               // optimal
             System.out.printf("%d: %s\n", i + 1, game.gameName());
             System.out.printf(" White Player: %s\n", game.whiteUsername());
             System.out.printf(" Black Player: %s\n", game.blackUsername());
@@ -314,28 +341,59 @@ public class Client {
             return;
         }
 
-        String gameID = getGameID();
+        if (dbGames.isEmpty()) {
+            System.out.println("There are no games. Start by creating one.");
+            return;
+        }
+
+        Integer gameID = getGameID();
         var teamColor = getColor();
 
         var response = serverFacade.joinGame(gameID, teamColor, authToken);
-        String tryAgain = "\nAn error while joining that game. Please try again\n";
+        String tryAgain = "\nAn error occurred while joining that game. Please try again.\n";
 
         if (response == null) {
             System.out.println(tryAgain);
+            return;
         }
 
         var statusCode = response.get("statusCode");
-        if (!statusCode.equals("200")) {
+        if (statusCode.equals("403")) {
+            System.out.println(
+                    "\nAnother user has joined as that color already. Please try again.\n");
+            return;
+        } else if (!statusCode.equals("200")) {
             System.out.println(tryAgain);
+            return;
         }
 
-        renderBoard();
+        renderBoard(gameID);
     }
 
-    private String getGameID() {
+    private Integer getGameID() {
         System.out.print("Game ID: ");
-        String gameID = scanner.nextLine().trim();
-        return gameID;
+        String gameID;
+        Integer id = null;
+
+        while (id == null) {
+            gameID = scanner.nextLine().trim();
+
+            id = parseGameID(gameID);
+
+            if (id == null) {
+                System.out.print("Please enter a valid game ID: ");
+            }
+        }
+
+        return id;
+    }
+
+    private Integer parseGameID(String gameID) {
+        try {
+            return dbGames.get(Integer.parseInt(gameID));
+        } catch (NumberFormatException ex) {
+            return null;
+        }
     }
 
     private ChessGame.TeamColor getColor() {
@@ -350,6 +408,8 @@ public class Client {
         while (!validWhite && !validBlack) {
             System.out.print("Team Color (must be 'white' or 'black'): ");
             color = scanner.nextLine().trim();
+            validWhite = color.toUpperCase().equals("WHITE");
+            validBlack = color.toUpperCase().equals("BLACK");
         }
 
         return colorMap.get(color.toUpperCase());
@@ -360,13 +420,17 @@ public class Client {
             return;
         }
 
-        // System.out.print("Game ID: ");
-        // String gameID = scanner.nextLine().trim();
+        if (dbGames.isEmpty()) {
+            System.out.println("There are no games. Start by creating one.");
+            return;
+        }
 
-        renderBoard();
+        Integer gameID = getGameID();
+
+        renderBoard(gameID);
     }
 
-    private void renderBoard() {
+    private void renderBoard(Integer gameID) {
         boardRenderer.drawBoard(false);
         System.out.println();
         boardRenderer.drawBoard(true);
