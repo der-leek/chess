@@ -152,10 +152,16 @@ public class Client {
     }
 
     private void help() {
+        System.out.println(EscapeSequences.SET_TEXT_BOLD);
+        System.out.println(EscapeSequences.SET_TEXT_ITALIC);
+
         System.out.println("1: Register an account with <USERNAME>, <PASSWORD>, <EMAIL@MAIL.COM>");
         System.out.println("2: Login to an existing account with <USERNAME>, <PASSWORD>");
         System.out.println("3: Display this message again");
-        System.out.print("4: Exit the application\n>>> ");
+        System.out.println("4: Exit CS240 Chess");
+
+        System.out.println(EscapeSequences.RESET_TEXT_ITALIC);
+        System.out.println(EscapeSequences.RESET_TEXT_BOLD_FAINT);
     }
 
     private void printPostLoginMenu() {
@@ -196,13 +202,19 @@ public class Client {
     }
 
     private void loginHelp() {
+        System.out.println(EscapeSequences.SET_TEXT_BOLD);
+        System.out.println(EscapeSequences.SET_TEXT_ITALIC);
+
         System.out.println("1: Display this message again");
         System.out.println("2: Logout and return to the start menu");
         System.out.println("3: Create a new chess game with <GAME_NAME>");
         System.out.println("4: List all games <GAME_ID> on the server");
         System.out.println(
                 "5: Play a pre-existing game of chess with <GAME_ID> <TEAM_COLOR>[WHITE|BLACK]");
-        System.out.print("6: Observe a chess game with <GAME_ID>\n>>> ");
+        System.out.println("6: Observe a chess game with <GAME_ID>");
+
+        System.out.println(EscapeSequences.RESET_TEXT_ITALIC);
+        System.out.println(EscapeSequences.RESET_TEXT_BOLD_FAINT);
     }
 
     private void logout() {
