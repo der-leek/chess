@@ -70,6 +70,9 @@ public class ServerFacadeTests {
         Map<String, String> result = sf.clear();
 
         Assertions.assertNull(result);
+        
+        int port = server.run(0);
+        sf = new ServerFacade(port);
     }
 
     @Test
