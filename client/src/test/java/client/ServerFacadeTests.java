@@ -1,11 +1,16 @@
 package client;
 
+import model.*;
 import serializer.*;
 import org.junit.jupiter.api.*;
-import chess.ChessGame;
 import server.Server;
 import java.util.Map;
+import chess.ChessGame;
+import java.util.HashSet;
+import java.util.ArrayList;
 import server.ServerFacade;
+import java.lang.reflect.Type;
+import com.google.gson.reflect.TypeToken;
 
 public class ServerFacadeTests {
 
@@ -128,6 +133,17 @@ public class ServerFacadeTests {
     }
 
     @Test
+    public void createTwoGames() {
+        Map<String, String> createResult = sf.createGame("new game", authToken);
+        Assertions.assertNotNull(createResult);
+        Assertions.assertEquals("200", createResult.get("statusCode"));
+
+        Map<String, String> newCreateResult = sf.createGame("another game", authToken);
+        Assertions.assertNotNull(newCreateResult);
+        Assertions.assertEquals("200", newCreateResult.get("statusCode"));
+    }
+
+    @Test
     public void createGameBadAuth() {
         Map<String, String> createResult = sf.createGame("new game", "badAuth");
         Assertions.assertNotNull(createResult);
@@ -139,6 +155,62 @@ public class ServerFacadeTests {
         Map<String, String> createResult = sf.createGame("badName;", authToken);
         Assertions.assertNotNull(createResult);
         Assertions.assertEquals("500", createResult.get("statusCode"));
+    }
+
+    @Test
+    public void listGamesBadAuth() {
+        Map<String, String> listResult = sf.listGames("badAuth");
+        Assertions.assertNotNull(listResult);
+        Assertions.assertEquals("401", listResult.get("statusCode"));
+    }
+
+    @Test
+    public void listNoGames() {
+        Map<String, String> listResult = sf.listGames(authToken);
+        Assertions.assertNotNull(listResult);
+        Assertions.assertEquals("200", listResult.get("statusCode"));
+
+        Type type = new TypeToken<Map<String, ArrayList<GameData>>>() {}.getType();
+        Map<String, ArrayList<GameData>> body = serializer.fromJson(listResult.get("body"), type);
+        ArrayList<GameData> games = body.get("games");
+
+        Assertions.assertNotNull(games);
+        Assertions.assertTrue(games.isEmpty());
+    }
+
+    @Test
+    public void listTwoGames() {
+        HashSet<String> gameNames = new HashSet<>();
+        HashSet<Integer> gameIDs = new HashSet<>();
+
+        Map<String, String> createResult = sf.createGame("game1", authToken);
+        var createBody = serializer.fromJson(createResult.get("body"), Map.class);
+        gameIDs.add(((Double) createBody.get("gameID")).intValue());
+        gameNames.add("game1");
+
+        Map<String, String> newCreateResult = sf.createGame("game2", authToken);
+        var newCreateBody = serializer.fromJson(newCreateResult.get("body"), Map.class);
+        gameIDs.add(((Double) newCreateBody.get("gameID")).intValue());
+        gameNames.add("game2");
+
+        Map<String, String> listResult = sf.listGames(authToken);
+        Assertions.assertNotNull(listResult);
+
+        Type type = new TypeToken<Map<String, ArrayList<GameData>>>() {}.getType();
+        Map<String, ArrayList<GameData>> body = serializer.fromJson(listResult.get("body"), type);
+
+        ArrayList<GameData> games = body.get("games");
+        Assertions.assertNotNull(games);
+        Assertions.assertFalse(games.isEmpty());
+
+        for (var game : games) {
+            Assertions.assertNotNull(game);
+            Assertions.assertTrue(gameNames.contains(game.gameName()));
+            Assertions.assertTrue(gameIDs.contains(game.gameID()));
+            Assertions.assertNull(game.whiteUsername());
+            Assertions.assertNull(game.blackUsername());
+            Assertions.assertNotNull(game.game());
+        }
     }
 
     @Test

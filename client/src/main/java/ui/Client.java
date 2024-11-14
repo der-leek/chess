@@ -1,9 +1,13 @@
 package ui;
 
 import server.*;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Scanner;
+import com.google.gson.reflect.TypeToken;
 import chess.ChessBoard;
+import model.GameData;
 import serializer.*;
 
 public class Client {
@@ -202,7 +206,21 @@ public class Client {
         }
     }
 
-    private void listGames() {}
+    private void listGames() {
+        var response = serverFacade.listGames(authToken);
+
+        Type type = new TypeToken<Map<String, ArrayList<GameData>>>() {}.getType();
+        Map<String, ArrayList<GameData>> body = serializer.fromJson(response.get("body"), type);
+
+        ArrayList<GameData> games = body.get("games");
+
+        for (int i = 0; i < games.size(); i++) {
+            var game = games.get(i);
+            System.out.printf("%d: %s\n", i + 1, game.gameName());
+            System.out.printf(" White Player: %s\n", game.whiteUsername());
+            System.out.printf(" Black Player: %s\n", game.blackUsername());
+        }
+    }
 
     private void playGame() {
         // System.out.print("Game ID: ");
