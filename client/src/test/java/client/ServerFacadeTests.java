@@ -26,10 +26,9 @@ public class ServerFacadeTests {
 
     @BeforeAll
     public static void setup() {
-        int port = 8080;
         server = new Server();
+        int port = server.run(0);
         sf = new ServerFacade(port);
-        server.run(8080);
 
         System.out.println("Started test HTTP server on " + port);
     }
@@ -63,6 +62,14 @@ public class ServerFacadeTests {
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals("200", result.get("statusCode"));
+    }
+
+    @Test
+    public void clearBadServer() {
+        server.stop();
+        Map<String, String> result = sf.clear();
+
+        Assertions.assertNull(result);
     }
 
     @Test

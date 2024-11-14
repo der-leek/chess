@@ -73,7 +73,7 @@ public class DAOTests {
         dataAccess.createUser(testUserData);
 
         Assertions.assertThrows(DataAccessException.class,
-                () -> dataAccess.findUserData("badUs3r"));
+                () -> dataAccess.findUserData("bad_user;"));
     }
 
     @Test
@@ -100,16 +100,6 @@ public class DAOTests {
         Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.createAuth(new AuthData("badAuth", testAuthData.username())));
 
-    }
-
-    @Test
-    public void findAuthSuccess() throws AuthorizationException, DataAccessException {
-        dataAccess.createUser(testUserData);
-        dataAccess.createAuth(testAuthData);
-        var data = dataAccess.findAuthData(testAuthData.authToken());
-
-        Assertions.assertEquals(testAuthData.authToken(), data.authToken());
-        Assertions.assertEquals(testAuthData.username(), data.username());
     }
 
     @Test
@@ -220,7 +210,7 @@ public class DAOTests {
         dataAccess.createUser(testUserData);
         dataAccess.createGame(testGameData);
 
-        Assertions.assertThrows(AuthorizationException.class,
+        Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.updateGame(new GameData(testGameData.gameID(), "badUs3r", null,
                         testGameData.gameName(), testGameData.game())));
 

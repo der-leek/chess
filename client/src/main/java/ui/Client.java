@@ -13,7 +13,7 @@ import serializer.*;
 
 public class Client {
     private String user;
-    private boolean LOGGED_IN;
+    private boolean loggedIn;
     private String authToken;
     private final Scanner scanner;
     private final ServerFacade serverFacade;
@@ -24,7 +24,7 @@ public class Client {
         boardRenderer = new BoardRenderer(new ChessBoard());
         serverFacade = new ServerFacade(8080);
         this.scanner = scanner;
-        LOGGED_IN = false;
+        loggedIn = false;
         authToken = null;
     }
 
@@ -33,7 +33,7 @@ public class Client {
             Client client = new Client(scanner);
             System.out.print("Welcome to CS240 Chess!\n");
             while (true) {
-                if (!client.LOGGED_IN) {
+                if (!client.loggedIn) {
                     client.printPreLoginMenu();
                     client.runPreLoginMenu();
                 } else {
@@ -75,7 +75,7 @@ public class Client {
     }
 
     private void register() {
-        while (!LOGGED_IN) {
+        while (!loggedIn) {
             chooseUsername();
             String password = chooseEmail();
             String email = choosePassword();
@@ -99,7 +99,7 @@ public class Client {
     private void getAuthToken(Map<String, String> response) {
         var body = serializer.fromJson(response.get("body"), Map.class);
         authToken = (String) body.get("authToken");
-        LOGGED_IN = true;
+        loggedIn = true;
     }
 
     private String choosePassword() {
@@ -120,14 +120,20 @@ public class Client {
     }
 
     private void login() {
-        while (!LOGGED_IN) {
+        while (!loggedIn) {
             getUsername();
             String password = getPassword();
             var response = serverFacade.login(user, password);
-            var statusCode = response.get("statusCode");
+            String tryAgain = "\nThere was an error logging in. Please try again.\n";
 
-            if (response == null || statusCode.equals("500")) {
-                System.out.println("\nThere was an error logging in. Please try again.\n");
+            if (response == null) {
+                System.out.println(tryAgain);
+                continue;
+            }
+
+            var statusCode = response.get("statusCode");
+            if (statusCode.equals("500")) {
+                System.out.println(tryAgain);
                 continue;
             }
 
@@ -236,7 +242,7 @@ public class Client {
 
         user = null;
         authToken = null;
-        LOGGED_IN = false;
+        loggedIn = false;
     }
 
     private void createGame() {
@@ -246,10 +252,15 @@ public class Client {
 
         String gameName = getGameName();
         var response = serverFacade.createGame(gameName, authToken);
-        var statusCode = response.get("statusCode");
+        String tryAgain = "\nAn error occurred while creating that game. Please try again\n";
 
-        if (response == null || !statusCode.equals("200")) {
-            System.out.println("\nThere was an error creating that game. Please try again\n");
+        if (response == null) {
+            System.out.println(tryAgain);
+        }
+
+        var statusCode = response.get("statusCode");
+        if (!statusCode.equals("200")) {
+            System.out.println(tryAgain);
         }
     }
 
@@ -265,10 +276,15 @@ public class Client {
         }
 
         var response = serverFacade.listGames(authToken);
-        var statusCode = response.get("statusCode");
+        String tryAgain = "\nAn error occurred while listing games. Please try again\n";
 
-        if (response == null || !statusCode.equals("200")) {
-            System.out.println("\nThere was an error creating that game. Please try again\n");
+        if (response == null) {
+            System.out.println(tryAgain);
+        }
+
+        var statusCode = response.get("statusCode");
+        if (!statusCode.equals("200")) {
+            System.out.println(tryAgain);
         }
 
         printGames(response);
@@ -298,43 +314,46 @@ public class Client {
             return;
         }
 
-        // String gameID = getGameID();
-        // var teamColor = getColor();
+        String gameID = getGameID();
+        var teamColor = getColor();
 
-        // var response = serverFacade.joinGame(gameID, teamColor, authToken);
-        // var statusCode = response.get("statusCode");
+        var response = serverFacade.joinGame(gameID, teamColor, authToken);
+        String tryAgain = "\nAn error while joining that game. Please try again\n";
 
-        // if (response == null || !statusCode.equals("200")) {
-        // System.out.println("\nThere was an error joining that game. Please try again\n");
-        // return;
-        // }
+        if (response == null) {
+            System.out.println(tryAgain);
+        }
+
+        var statusCode = response.get("statusCode");
+        if (!statusCode.equals("200")) {
+            System.out.println(tryAgain);
+        }
 
         renderBoard();
     }
 
-    // private String getGameID() {
-    // System.out.print("Game ID: ");
-    // String gameID = scanner.nextLine().trim();
-    // return gameID;
-    // TODO: THIS STILL NEEDS TO MAP TO THE ACTUAL GAME IDS
-    // }
+    private String getGameID() {
+        System.out.print("Game ID: ");
+        String gameID = scanner.nextLine().trim();
+        return gameID;
+    }
 
-    // private ChessGame.TeamColor getColor() {
-    // System.out.print("Team Color: ");
-    // String color = scanner.nextLine().trim();
+    private ChessGame.TeamColor getColor() {
+        System.out.print("Team Color: ");
+        String color = scanner.nextLine().trim();
 
-    // boolean validWhite = color.toUpperCase().equals("WHITE");
-    // boolean validBlack = color.toUpperCase().equals("BLACK");
-    // var colorMap =
-    // Map.of("WHITE", ChessGame.TeamColor.WHITE, "BLACK", ChessGame.TeamColor.BLACK);
+        boolean validWhite = color.toUpperCase().equals("WHITE");
+        boolean validBlack = color.toUpperCase().equals("BLACK");
+        var colorMap =
+                Map.of("WHITE", ChessGame.TeamColor.WHITE, "BLACK", ChessGame.TeamColor.BLACK);
 
-    // while (!validWhite && !validBlack) {
-    // System.out.print("Team Color (must be 'white' or 'black'): ");
-    // color = scanner.nextLine().trim();
-    // }
+        while (!validWhite && !validBlack) {
+            System.out.print("Team Color (must be 'white' or 'black'): ");
+            color = scanner.nextLine().trim();
+        }
 
-    // return colorMap.get(color.toUpperCase());
-    // }
+        return colorMap.get(color.toUpperCase());
+    }
 
     private void observeGame() {
         if (authToken == null) {
