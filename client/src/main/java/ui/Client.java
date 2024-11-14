@@ -22,6 +22,7 @@ public class Client {
     private final BoardRenderer boardRenderer;
     private final Serializer serializer = new Serializer();
 
+
     public Client(Scanner scanner) {
         boardRenderer = new BoardRenderer(new ChessBoard());
         serverFacade = new ServerFacade(8080);
@@ -32,18 +33,29 @@ public class Client {
     }
 
     public static void main(String[] args) {
+        System.out.println();
+        System.out.print(EscapeSequences.SET_BOLD_ITALIC);
+        System.out.println("Welcome to CS240 Chess!");
+        System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
+
         try (Scanner scanner = new Scanner(System.in)) {
             Client client = new Client(scanner);
-            System.out.print("Welcome to CS240 Chess!\n");
             while (true) {
                 if (!client.loggedIn) {
-                    client.printPreLoginMenu();
+                    System.out.println();
                     client.runPreLoginMenu();
                 } else {
+                    System.out.println();
                     client.runPostLoginMenu();
                 }
             }
         }
+    }
+
+    private void printBoldItalic(String message) {
+        System.out.print(EscapeSequences.SET_BOLD_ITALIC);
+        System.out.println(message);
+        System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
     }
 
     private void printPreLoginMenu() {
@@ -55,6 +67,7 @@ public class Client {
     }
 
     private void runPreLoginMenu() {
+        printPreLoginMenu();
         String line = scanner.nextLine().trim();
         System.out.println();
 
@@ -82,16 +95,12 @@ public class Client {
     private void clearDB() {
         var result = serverFacade.clear();
         if (result == null) {
-            System.out.println("Remember to start the server!");
+            printBoldItalic("Remember to start the server!");
             return;
         }
 
         if (result.get("statusCode").equals("200")) {
-            System.out.println(EscapeSequences.SET_TEXT_BOLD);
-            System.out.println(EscapeSequences.SET_TEXT_ITALIC);
-            System.out.println("DB cleared!\n");
-            System.out.println(EscapeSequences.RESET_TEXT_BOLD_FAINT);
-            System.out.println(EscapeSequences.RESET_TEXT_ITALIC);
+            printBoldItalic("DB cleared!");
         }
     }
 
@@ -103,12 +112,12 @@ public class Client {
         var response = serverFacade.register(user, password, email);
 
         if (response == null) {
-            System.out.println("\nThere was an error registering. Please try again.");
+            printBoldItalic("There was an error registering. Please try again.");
             return;
         }
 
         if (!response.get("statusCode").equals("200")) {
-            System.out.println("\nInvalid username. Please try another.\n");
+            printBoldItalic("Invalid username. Please try another.");
             return;
         }
 
@@ -142,21 +151,21 @@ public class Client {
         getUsername();
         String password = getPassword();
         var response = serverFacade.login(user, password);
-        String tryAgain = "\nThere was an error logging in. Please try again.\n";
+        String tryAgain = "There was an error logging in. Please try again.";
 
         if (response == null) {
-            System.out.println(tryAgain);
+            printBoldItalic(tryAgain);
             return;
         }
 
         var statusCode = response.get("statusCode");
         if (statusCode.equals("500")) {
-            System.out.println(tryAgain);
+            printBoldItalic(tryAgain);
             return;
         }
 
         if (statusCode.equals("401")) {
-            System.out.println("\nInvalid credentials. Please try again.\n");
+            printBoldItalic("Invalid credentials. Please try again.");
             return;
         }
 
@@ -175,20 +184,18 @@ public class Client {
     }
 
     private void help() {
-        System.out.println(EscapeSequences.SET_TEXT_BOLD);
-        System.out.println(EscapeSequences.SET_TEXT_ITALIC);
+        System.out.print(EscapeSequences.SET_BOLD_ITALIC);
 
         System.out.println("1: Register an account with <USERNAME>, <PASSWORD>, <EMAIL@MAIL.COM>");
         System.out.println("2: Login to an existing account with <USERNAME>, <PASSWORD>");
         System.out.println("3: Display this message again");
         System.out.println("4: Exit CS240 Chess");
 
-        System.out.println(EscapeSequences.RESET_TEXT_ITALIC);
-        System.out.println(EscapeSequences.RESET_TEXT_BOLD_FAINT);
+        System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
     }
 
     private void printPostLoginMenu() {
-        System.out.printf("%nWelcome, %s. Enter a number to proceed:%n", user);
+        System.out.printf("Welcome, %s. Enter a number to proceed:\n", user);
         System.out.println("1: Help");
         System.out.println("2: Logout");
         System.out.println("3: Create Game");
@@ -229,8 +236,7 @@ public class Client {
     }
 
     private void loginHelp() {
-        System.out.println(EscapeSequences.SET_TEXT_BOLD);
-        System.out.println(EscapeSequences.SET_TEXT_ITALIC);
+        System.out.print(EscapeSequences.SET_BOLD_ITALIC);
 
         System.out.println("1: Display this message again");
         System.out.println("2: Logout and return to the start menu");
@@ -240,8 +246,7 @@ public class Client {
                 "5: Play a pre-existing game of chess with <GAME_ID> <TEAM_COLOR>[WHITE|BLACK]");
         System.out.println("6: Observe a chess game with <GAME_ID>");
 
-        System.out.println(EscapeSequences.RESET_TEXT_ITALIC);
-        System.out.println(EscapeSequences.RESET_TEXT_BOLD_FAINT);
+        System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
     }
 
     private void logout() {
@@ -252,12 +257,12 @@ public class Client {
         var response = serverFacade.logout(authToken);
 
         while (response == null) {
-            System.out.println("\nThere was an error logging out. Trying again...\n");
+            printBoldItalic("There was an error logging out. Trying again...");
             response = serverFacade.logout(authToken);
         }
 
         if (!response.get("statusCode").equals("200")) {
-            System.out.println("\nThere was an error logging out. Please try again...\n");
+            printBoldItalic("There was an error logging out. Try again.");
             return;
         }
 
@@ -273,15 +278,15 @@ public class Client {
 
         String gameName = getGameName();
         var response = serverFacade.createGame(gameName, authToken);
-        String tryAgain = "\nAn error occurred while creating that game. Please try again\n";
+        String tryAgain = "An error occurred while creating that game. Please try again";
 
         if (response == null) {
-            System.out.println(tryAgain);
+            printBoldItalic(tryAgain);
         }
 
         var statusCode = response.get("statusCode");
         if (!statusCode.equals("200")) {
-            System.out.println(tryAgain);
+            printBoldItalic(tryAgain);
         }
 
         listGames();
@@ -299,16 +304,16 @@ public class Client {
         }
 
         var response = serverFacade.listGames(authToken);
-        String tryAgain = "\nAn error occurred while listing games. Please try again.\n";
+        String tryAgain = "An error occurred while listing games. Please try again.";
 
         if (response == null) {
-            System.out.println(tryAgain);
+            printBoldItalic(tryAgain);
             return;
         }
 
         var statusCode = response.get("statusCode");
         if (!statusCode.equals("200")) {
-            System.out.println(tryAgain);
+            printBoldItalic(tryAgain);
             return;
         }
 
@@ -322,14 +327,13 @@ public class Client {
         ArrayList<GameData> games = body.get("games");
 
         if (games.isEmpty()) {
-            System.out.println("There are no games. Start by creating one.");
+            printBoldItalic("There are no games. Start by creating one.");
             return;
         }
 
         for (int i = 0; i < games.size(); i++) {
             var game = games.get(i);
-            dbGames.put(i + 1, game.gameID()); // requires that games be listed before joining. Not
-                                               // optimal
+            dbGames.put(i + 1, game.gameID());
             System.out.printf("%d: %s\n", i + 1, game.gameName());
             System.out.printf(" White Player: %s\n", game.whiteUsername());
             System.out.printf(" Black Player: %s\n", game.blackUsername());
@@ -342,28 +346,27 @@ public class Client {
         }
 
         if (dbGames.isEmpty()) {
-            System.out.println("There are no games. Start by creating one.");
+            printBoldItalic("There are no games. Start by creating one.");
             return;
         }
 
         Integer gameID = getGameID();
-        var teamColor = getColor();
+        ChessGame.TeamColor teamColor = getColor();
 
         var response = serverFacade.joinGame(gameID, teamColor, authToken);
-        String tryAgain = "\nAn error occurred while joining that game. Please try again.\n";
+        String tryAgain = "An error occurred while joining that game. Please try again.";
 
         if (response == null) {
-            System.out.println(tryAgain);
+            printBoldItalic(tryAgain);
             return;
         }
 
         var statusCode = response.get("statusCode");
         if (statusCode.equals("403")) {
-            System.out.println(
-                    "\nAnother user has joined as that color already. Please try again.\n");
+            printBoldItalic("Another user has joined as that color already. Please try again.");
             return;
         } else if (!statusCode.equals("200")) {
-            System.out.println(tryAgain);
+            printBoldItalic(tryAgain);
             return;
         }
 
@@ -421,7 +424,7 @@ public class Client {
         }
 
         if (dbGames.isEmpty()) {
-            System.out.println("There are no games. Start by creating one.");
+            printBoldItalic("There are no games. Start by creating one.");
             return;
         }
 
