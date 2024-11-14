@@ -1,11 +1,10 @@
 package client;
 
-import model.*;
 import serializer.*;
 import org.junit.jupiter.api.*;
+import chess.ChessGame;
 import server.Server;
 import java.util.Map;
-import java.util.ArrayList;
 import server.ServerFacade;
 
 public class ServerFacadeTests {
@@ -140,5 +139,19 @@ public class ServerFacadeTests {
         Map<String, String> createResult = sf.createGame("badName;", authToken);
         Assertions.assertNotNull(createResult);
         Assertions.assertEquals("500", createResult.get("statusCode"));
+    }
+
+    @Test
+    public void joinGameSuccess() {
+        Map<String, String> createResult = sf.createGame("newGame", authToken);
+        var body = serializer.fromJson(createResult.get("body"), Map.class);
+        Double gameID = (Double) body.get("gameID");
+
+        Map<String, String> joinResult =
+                sf.joinGame(Double.toString(gameID), ChessGame.TeamColor.WHITE, authToken);
+
+        Assertions.assertNotNull(joinResult);
+        Assertions.assertEquals("200", joinResult.get("statusCode"));
+        // add tests to verify that the game exists in the database
     }
 }

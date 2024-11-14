@@ -4,6 +4,7 @@ import serializer.*;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.Map;
+import chess.ChessGame;
 
 public class ServerFacade {
 
@@ -68,6 +69,15 @@ public class ServerFacade {
         }
     }
 
-    public void joinGame() {}
+    public Map<String, String> joinGame(String gameID, ChessGame.TeamColor playerColor,
+            String authToken) {
+        var body = Map.of("playerColor", playerColor, "gameID", gameID);
+
+        try {
+            return http.put("game", serializer.toJson(body), authToken);
+        } catch (IOException | URISyntaxException ex) {
+            return null;
+        }
+    }
 
 }
