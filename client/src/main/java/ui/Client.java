@@ -39,15 +39,19 @@ public class Client {
         System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
 
         try (Scanner scanner = new Scanner(System.in)) {
-            Client client = new Client(scanner);
-            while (true) {
-                if (!client.loggedIn) {
-                    System.out.println();
-                    client.runPreLoginMenu();
-                } else {
-                    System.out.println();
-                    client.runPostLoginMenu();
-                }
+            runClient(scanner);
+        }
+    }
+
+    private static void runClient(Scanner scanner) {
+        Client client = new Client(scanner);
+        while (true) {
+            if (!client.loggedIn) {
+                System.out.println();
+                client.runPreLoginMenu();
+            } else {
+                System.out.println();
+                client.runPostLoginMenu();
             }
         }
     }
