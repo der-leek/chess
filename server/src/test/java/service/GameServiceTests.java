@@ -16,12 +16,13 @@ public class GameServiceTests {
 
     @BeforeEach
     public void setup() {
+        // WARNING: These tests are incompatible with MySqlDataAccess
         dataAccess = new MemoryDataAccess();
         gameService = new GameService(dataAccess);
     }
 
     @Test
-    public void createGameInvalidAuth() throws DataAccessException {
+    public void createGameInvalidAuth() throws AuthorizationException, DataAccessException {
         dataAccess.createAuth(new AuthData("auth", "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
@@ -49,7 +50,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void joinGameInvalidAuth() throws DataAccessException {
+    public void joinGameInvalidAuth() throws AuthorizationException, DataAccessException {
         dataAccess.createAuth(new AuthData("auth", "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 
@@ -59,7 +60,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void joinGameInvalidGameID() throws DataAccessException {
+    public void joinGameInvalidGameID() throws AuthorizationException, DataAccessException {
         String authToken = "auth";
         dataAccess.createAuth(new AuthData(authToken, "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
@@ -74,7 +75,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void joinGameUsernameTaken() throws DataAccessException {
+    public void joinGameUsernameTaken() throws AuthorizationException, DataAccessException {
         String authToken = "auth";
         dataAccess.createAuth(new AuthData(authToken, "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
@@ -125,7 +126,7 @@ public class GameServiceTests {
     }
 
     @Test
-    public void listGamesInvalidAuth() throws DataAccessException {
+    public void listGamesInvalidAuth() throws AuthorizationException, DataAccessException {
         dataAccess.createAuth(new AuthData("auth", "user"));
         Assertions.assertTrue(!dataAccess.isAuthDataEmpty());
 

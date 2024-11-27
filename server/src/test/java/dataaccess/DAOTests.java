@@ -15,7 +15,7 @@ public class DAOTests {
     private AuthData testAuthData;
     private GameData testGameData;
 
-    public DAOTests() throws DataAccessException {
+    public DAOTests() throws AuthorizationException, DataAccessException {
         dataAccess = new MySqlDataAccess();
         testUserData = new UserData("user", "pass", "me@mail.com");
         testAuthData = new AuthData("3f9a9c9b-6745-4a7f-8cfc-bc11c8ab2b35", "user");
@@ -23,14 +23,14 @@ public class DAOTests {
     }
 
     @BeforeEach
-    public void setup() throws DataAccessException {
+    public void setup() throws AuthorizationException, DataAccessException {
         dataAccess.clearGameDAO();
         dataAccess.clearAuthDAO();
         dataAccess.clearUserDAO();
     }
 
     @Test
-    public void createNewUserSuccess() throws DataAccessException {
+    public void createNewUserSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         var data = dataAccess.findUserData(testUserData.username());
 
@@ -40,7 +40,7 @@ public class DAOTests {
     }
 
     @Test
-    public void createNewUserOverwrite() throws DataAccessException {
+    public void createNewUserOverwrite() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createUser(
                 new UserData(testUserData.username(), testUserData.password(), "new@mail.com"));
@@ -53,7 +53,7 @@ public class DAOTests {
     }
 
     @Test
-    public void findUserSuccess() throws DataAccessException {
+    public void findUserSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         var data = dataAccess.findUserData(testUserData.username());
 
@@ -61,7 +61,7 @@ public class DAOTests {
     }
 
     @Test
-    public void findNonUser() throws DataAccessException {
+    public void findNonUser() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         var data = dataAccess.findUserData("badUser");
 
@@ -69,10 +69,10 @@ public class DAOTests {
     }
 
     @Test
-    public void findUserBadUsername() throws DataAccessException {
+    public void findUserBadUsername() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
 
-        Assertions.assertThrows(DataAccessException.class,
+        Assertions.assertThrows(AuthorizationException.class,
                 () -> dataAccess.findUserData("bad_user;"));
     }
 
@@ -87,17 +87,17 @@ public class DAOTests {
     }
 
     @Test
-    public void createNewAuthInvalidUsername() throws DataAccessException {
+    public void createNewAuthInvalidUsername() throws AuthorizationException, DataAccessException {
         Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.createAuth(new AuthData(testAuthData.authToken(), "badUser")));
 
     }
 
     @Test
-    public void createNewAuthBadAuthToken() throws DataAccessException {
+    public void createNewAuthBadAuthToken() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
 
-        Assertions.assertThrows(DataAccessException.class,
+        Assertions.assertThrows(AuthorizationException.class,
                 () -> dataAccess.createAuth(new AuthData("badAuth", testAuthData.username())));
 
     }
@@ -112,7 +112,7 @@ public class DAOTests {
     }
 
     @Test
-    public void findNonAuth() throws DataAccessException {
+    public void findNonAuth() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
 
@@ -141,15 +141,16 @@ public class DAOTests {
     }
 
     @Test
-    public void deleteAuthBadToken() throws DataAccessException {
+    public void deleteAuthBadToken() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
 
-        Assertions.assertThrows(DataAccessException.class, () -> dataAccess.deleteAuth("badToken"));
+        Assertions.assertThrows(AuthorizationException.class,
+                () -> dataAccess.deleteAuth("badToken"));
     }
 
     @Test
-    public void createGameSuccess() throws DataAccessException {
+    public void createGameSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createGame(testGameData);
         var data = dataAccess.findGameData(testGameData.gameID());
 
@@ -161,7 +162,7 @@ public class DAOTests {
     }
 
     @Test
-    public void createGameOverwrite() throws DataAccessException {
+    public void createGameOverwrite() throws AuthorizationException, DataAccessException {
         dataAccess.createGame(testGameData);
         Assertions.assertThrows(DataAccessException.class,
                 () -> dataAccess.createGame(new GameData(testGameData.gameID(), null, null,
@@ -170,7 +171,7 @@ public class DAOTests {
     }
 
     @Test
-    public void findGameSuccess() throws DataAccessException {
+    public void findGameSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createGame(testGameData);
         var data = dataAccess.findGameData(testGameData.gameID());
 
@@ -183,7 +184,7 @@ public class DAOTests {
     }
 
     @Test
-    public void findGameWrongID() throws DataAccessException {
+    public void findGameWrongID() throws AuthorizationException, DataAccessException {
         dataAccess.createGame(testGameData);
         var data = dataAccess.findGameData(testGameData.gameID() + 3);
 
@@ -206,7 +207,7 @@ public class DAOTests {
     }
 
     @Test
-    public void updateGameBadUsername() throws DataAccessException {
+    public void updateGameBadUsername() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createGame(testGameData);
 
@@ -217,7 +218,7 @@ public class DAOTests {
     }
 
     @Test
-    public void listGamesSuccess() throws DataAccessException {
+    public void listGamesSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createGame(testGameData);
         var newGameData =
                 new GameData(testGameData.gameID() + 1, null, null, "newgame", new ChessGame());
@@ -229,14 +230,14 @@ public class DAOTests {
     }
 
     @Test
-    public void listGamesNoGames() throws DataAccessException {
+    public void listGamesNoGames() throws AuthorizationException, DataAccessException {
         var games = dataAccess.listGames();
 
         Assertions.assertTrue(games.isEmpty());
     }
 
     @Test
-    public void clearUserSuccess() throws DataAccessException {
+    public void clearUserSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.clearUserDAO();
 
@@ -244,7 +245,7 @@ public class DAOTests {
     }
 
     @Test
-    public void clearAuthSuccess() throws DataAccessException {
+    public void clearAuthSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createUser(testUserData);
         dataAccess.createAuth(testAuthData);
         dataAccess.clearAuthDAO();
@@ -253,7 +254,7 @@ public class DAOTests {
     }
 
     @Test
-    public void clearGameSuccess() throws DataAccessException {
+    public void clearGameSuccess() throws AuthorizationException, DataAccessException {
         dataAccess.createGame(testGameData);
         dataAccess.clearGameDAO();
 

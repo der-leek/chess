@@ -12,8 +12,10 @@ public class ClearServiceTests {
     private DataAccess dataAccess;
     private ClearService service;
 
+    // WARNING: These tests are incompatible with MySqlDataAccess
+
     @Test
-    public void clearUsersSuccess() throws DataAccessException {
+    public void clearUsersSuccess() throws AuthorizationException, DataAccessException {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
@@ -31,7 +33,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearAuthsSuccess() throws DataAccessException {
+    public void clearAuthsSuccess() throws AuthorizationException, DataAccessException {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 
@@ -49,7 +51,7 @@ public class ClearServiceTests {
     }
 
     @Test
-    public void clearGamesSuccess() throws DataAccessException {
+    public void clearGamesSuccess() throws AuthorizationException, DataAccessException {
         dataAccess = new MemoryDataAccess();
         service = new ClearService(dataAccess);
 

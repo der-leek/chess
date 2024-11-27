@@ -5,21 +5,21 @@ import service.AuthorizationException;
 import java.util.ArrayList;
 
 public interface DataAccess {
-    UserData findUserData(String username) throws DataAccessException;
+    UserData findUserData(String username) throws AuthorizationException, DataAccessException;
 
-    void createUser(UserData data) throws DataAccessException;
+    void createUser(UserData data) throws AuthorizationException, DataAccessException;
 
     AuthData findAuthData(String authToken) throws AuthorizationException, DataAccessException;
 
-    void createAuth(AuthData data) throws DataAccessException;
+    void createAuth(AuthData data) throws AuthorizationException, DataAccessException;
 
-    void deleteAuth(String authToken) throws DataAccessException;
+    void deleteAuth(String authToken) throws AuthorizationException, DataAccessException;
 
     ArrayList<GameData> listGames() throws DataAccessException;
 
     GameData findGameData(Integer gameID) throws DataAccessException;
 
-    void createGame(GameData data) throws DataAccessException;
+    void createGame(GameData data) throws AuthorizationException, DataAccessException;
 
     void updateGame(GameData data) throws AuthorizationException, DataAccessException;
 

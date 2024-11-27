@@ -29,7 +29,9 @@ public class Server {
     public Integer run(int desiredPort) {
         Spark.port(desiredPort);
         Spark.staticFiles.location("web");
+
         createRoutes();
+
         Spark.awaitInitialization();
         return Spark.port();
     }
@@ -52,11 +54,6 @@ public class Server {
     private Object clear(Request req, Response res) throws DataAccessException {
         res.type("application/json");
 
-        if (!req.body().isEmpty()) {
-            res.status(400);
-            return serializer.toJson(new ErrorResponse("Error: bad request"));
-        }
-
         try {
             clearService.clearAuths();
             clearService.clearGames();
@@ -75,15 +72,16 @@ public class Server {
         LoginResponse response;
 
         try {
-            response = userService.register(
-                    serializer.fromJson(req.body(), RegisterRequest.class));
+            response = userService.register(serializer.fromJson(req.body(), RegisterRequest.class));
         } catch (JsonSyntaxException e) {
             res.status(400);
             return serializer.toJson(new ErrorResponse("Error: bad request"));
+        } catch (AuthorizationException e) {
+            res.status(401);
+            return serializer.toJson(new ErrorResponse("Error: unauthorized"));
         } catch (DataAccessException e) {
             res.status(403);
-            return new Serializer()
-                    .toJson(new ErrorResponse("Error: already taken"));
+            return serializer.toJson(new ErrorResponse("Error: already taken"));
         } catch (Throwable e) {
             res.status(500);
             return serializer.toJson(new ErrorResponse(e.getMessage()));
@@ -98,12 +96,11 @@ public class Server {
         LoginResponse response;
 
         try {
-            response = userService
-                    .login(serializer.fromJson(req.body(), LoginRequest.class));
+            response = userService.login(serializer.fromJson(req.body(), LoginRequest.class));
         } catch (JsonSyntaxException e) {
             res.status(400);
             return serializer.toJson(new ErrorResponse("Error: bad request"));
-        } catch (DataAccessException e) {
+        } catch (AuthorizationException e) {
             res.status(401);
             return serializer.toJson(new ErrorResponse("Error: unauthorized"));
         } catch (Throwable e) {
@@ -117,11 +114,6 @@ public class Server {
 
     private Object logout(Request req, Response res) {
         res.type("application/json");
-
-        if (!req.body().isEmpty()) {
-            res.status(400);
-            return serializer.toJson(new ErrorResponse("Error: bad request"));
-        }
 
         try {
             userService.logout(new LogoutRequest(req.headers("authorization")));
@@ -143,8 +135,7 @@ public class Server {
 
         try {
             response = gameService.createGame(req.headers("authorization"),
-                    serializer.fromJson(req.body(),
-                            CreateGameRequest.class));
+                    serializer.fromJson(req.body(), CreateGameRequest.class));
         } catch (JsonSyntaxException e) {
             res.status(400);
             return serializer.toJson(new ErrorResponse("Error: bad request"));
@@ -163,24 +154,18 @@ public class Server {
     private Object joinGame(Request req, Response res) {
         res.type("application/json");
 
-        if (req.body().isEmpty()) {
-            res.status(400);
-            return serializer.toJson(new ErrorResponse("Error: bad request"));
-        }
-
         try {
             gameService.joinGame(req.headers("authorization"),
                     serializer.fromJson(req.body(), JoinGameRequest.class));
+        } catch (NullPointerException | JsonSyntaxException e) {
+            res.status(400);
+            return serializer.toJson(new ErrorResponse("Error: bad request"));
         } catch (AuthorizationException e) {
             res.status(401);
             return serializer.toJson(new ErrorResponse("Error: unauthorized"));
         } catch (DataAccessException e) {
             res.status(403);
-            return new Serializer()
-                    .toJson(new ErrorResponse("Error: already taken"));
-        } catch (NullPointerException e) {
-            res.status(400);
-            return serializer.toJson(new ErrorResponse("Error: bad request"));
+            return serializer.toJson(new ErrorResponse("Error: already taken"));
         } catch (Throwable e) {
             res.status(500);
             return serializer.toJson(new ErrorResponse(e.getMessage()));
@@ -193,11 +178,6 @@ public class Server {
     private Object listGames(Request req, Response res) throws DataAccessException {
         res.type("application/json");
         ListGameResponse response;
-
-        if (!req.body().isEmpty()) {
-            res.status(400);
-            return serializer.toJson(new ErrorResponse("Error: bad request"));
-        }
 
         try {
             response = gameService.listGames(req.headers("authorization"));

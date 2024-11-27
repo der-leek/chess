@@ -17,7 +17,7 @@ public class UserService {
     }
 
     public LoginResponse register(RegisterRequest req)
-            throws DataAccessException, JsonSyntaxException {
+            throws DataAccessException, JsonSyntaxException, AuthorizationException {
         String username = req.username();
 
         if (req.password() == null) {
@@ -35,16 +35,17 @@ public class UserService {
         return new LoginResponse(username, authData.authToken());
     }
 
-    public LoginResponse login(LoginRequest req) throws DataAccessException {
+    public LoginResponse login(LoginRequest req)
+            throws DataAccessException, AuthorizationException {
         String username = req.username();
         var userData = dataAccess.findUserData(username);
 
         if (userData == null) {
-            throw new DataAccessException("Invalid username: " + username);
+            throw new AuthorizationException("Invalid username: " + username);
         }
 
         if (!BCrypt.checkpw(req.password(), userData.password())) {
-            throw new DataAccessException("Invalid password");
+            throw new AuthorizationException("Invalid password");
         }
 
         AuthData authData = createAuth(username);
@@ -61,7 +62,8 @@ public class UserService {
         dataAccess.deleteAuth(authData.authToken());
     }
 
-    private AuthData createAuth(String username) throws DataAccessException {
+    private AuthData createAuth(String username)
+            throws AuthorizationException, DataAccessException {
         String authToken = UUID.randomUUID().toString();
         var authData = new AuthData(authToken, username);
         dataAccess.createAuth(authData);

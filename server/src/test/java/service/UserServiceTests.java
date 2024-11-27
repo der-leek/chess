@@ -14,12 +14,13 @@ public class UserServiceTests {
 
     @BeforeEach
     public void setup() {
+        // WARNING: These tests are incompatible with MySqlDataAccess
         dataAccess = new MemoryDataAccess();
         userService = new UserService(dataAccess);
     }
 
     @Test
-    public void registerUserExists() throws DataAccessException {
+    public void registerUserExists() throws AuthorizationException, DataAccessException {
         var request = new RegisterRequest("user", "pass", "email");
         dataAccess
                 .createUser(new UserData(request.username(), request.password(), request.email()));
@@ -27,7 +28,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void registerSuccessful() throws DataAccessException {
+    public void registerSuccessful() throws AuthorizationException, DataAccessException {
         var request = new RegisterRequest("user", "pass", "email");
         userService.register(request);
         var expectedUserData =
@@ -36,7 +37,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void registerVerifyResult() throws DataAccessException {
+    public void registerVerifyResult() throws AuthorizationException, DataAccessException {
         var request = new RegisterRequest("user", "pass", "email");
         var result = userService.register(request);
         Assertions.assertNotNull(result.authToken());
@@ -45,7 +46,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void loginUserExists() throws DataAccessException {
+    public void loginUserExists() throws AuthorizationException, DataAccessException {
         var request = new LoginRequest("us3r", "pass");
 
         String correctUsername = "user";
@@ -56,7 +57,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void loginWrongPassword() throws DataAccessException {
+    public void loginWrongPassword() throws AuthorizationException, DataAccessException {
         var request = new LoginRequest("user", "p4ss");
 
         String correctPassword = "pass";
@@ -67,7 +68,7 @@ public class UserServiceTests {
     }
 
     @Test
-    public void loginSuccessful() throws DataAccessException {
+    public void loginSuccessful() throws AuthorizationException, DataAccessException {
         var request = new LoginRequest("user", "pass");
         dataAccess.createUser(new UserData(request.username(), request.password(), "email"));
         Assertions.assertTrue(!dataAccess.isUserDataEmpty());
