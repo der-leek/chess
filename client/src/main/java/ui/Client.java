@@ -13,25 +13,6 @@ import serializer.Serializer;
 import server.ServerFacade;
 
 public class Client {
-    private String user;
-    private boolean loggedIn;
-    private String authToken;
-    private Map<Integer, Integer> dbGames;
-    private final Scanner scanner;
-    private final ServerFacade serverFacade;
-    private final BoardRenderer boardRenderer;
-    private final Serializer serializer = new Serializer();
-
-
-    public Client(Scanner scanner) {
-        boardRenderer = new BoardRenderer(new ChessBoard());
-        serverFacade = new ServerFacade(8080);
-        dbGames = new HashMap<>();
-        this.scanner = scanner;
-        loggedIn = false;
-        authToken = null;
-    }
-
     public static void main(String[] args) {
         System.out.println();
         System.out.print(EscapeSequences.SET_BOLD_ITALIC);
@@ -54,6 +35,25 @@ public class Client {
                 client.runPostLoginMenu();
             }
         }
+    }
+
+    private String user;
+    private boolean loggedIn;
+    private String authToken;
+    private boolean gameInProgress;
+    private Map<Integer, Integer> dbGames;
+    private final Scanner scanner;
+    private final ServerFacade serverFacade;
+    private final BoardRenderer boardRenderer;
+    private final Serializer serializer = new Serializer();
+
+    public Client(Scanner scanner) {
+        boardRenderer = new BoardRenderer(new ChessBoard());
+        serverFacade = new ServerFacade(8080);
+        dbGames = new HashMap<>();
+        this.scanner = scanner;
+        loggedIn = false;
+        authToken = null;
     }
 
     private void printBoldItalic(String message) {
@@ -374,7 +374,13 @@ public class Client {
             return;
         }
 
-        renderBoard(gameID);
+        renderBoard(gameID, teamColor);
+
+        gameInProgress = true;
+        while (gameInProgress) {
+            System.out.println();
+            runGameplayMenu(gameID, teamColor);
+        }
     }
 
     private Integer getGameID() {
@@ -422,6 +428,86 @@ public class Client {
         return colorMap.get(color.toUpperCase());
     }
 
+    private void renderBoard(Integer gameID, ChessGame.TeamColor teamColor) {
+        boolean reversed = (teamColor == ChessGame.TeamColor.WHITE ? false : true);
+
+        System.out.println();
+        boardRenderer.drawBoard(reversed);
+        System.out.println();
+    }
+
+    private void runGameplayMenu(int gameID, ChessGame.TeamColor teamColor) {
+        printGameplayMenu();
+        String line = scanner.nextLine().trim();
+        System.out.println();
+
+        switch (line) {
+            case ("1"):
+                printGameplayHelp();
+                break;
+            case ("2"):
+                renderBoard(gameID, teamColor);
+                break;
+            case ("3"):
+                leaveGame();
+                break;
+            case ("4"):
+                makeMove();
+                break;
+            case ("5"):
+                resign();
+                break;
+            case ("6"):
+                highlightMoves();
+                break;
+            case ("clear"):
+                clearDB();
+                loggedIn = false;
+                break;
+        }
+    }
+
+    private void printGameplayMenu() {
+        System.out.println("1: Help");
+        System.out.println("2: Redraw Chess Board");
+        System.out.println("3: Leave Game");
+        System.out.println("4: Make Move");
+        System.out.println("5: Resign");
+        System.out.print("6: Highlight Legal Moves\n>>> ");
+    }
+
+    private void printGameplayHelp() {
+        System.out.print(EscapeSequences.SET_BOLD_ITALIC);
+
+        System.out.println("1: Display this message again");
+        System.out.println("2: Redraw the current state of the chess board");
+        System.out.println("3: Leave the game and return to the login menu");
+        System.out.println("4: Make a move from <START_POSITION> to <END_POSITION> (e.g. b1 c5)");
+        System.out.println("5: End the game by resigning");
+        System.out.println("6: Show the legal moves for a given <POSITION> (e.g. h8)");
+
+        System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
+    }
+
+    private void leaveGame() {
+        // send LEAVE request via websocket
+        gameInProgress = false;
+    }
+
+    private void makeMove() {
+        // convert moves into ChessPositions
+        // send MAKE MOVE request via websocket
+    }
+
+    private void resign() {
+        // send RESIGN request via websocket
+    }
+
+    private void highlightMoves() {
+        // request board via websocket
+        // redraw board with highlighted moves (modify BoardRenderer)
+    }
+
     private void observeGame() {
         if (authToken == null) {
             return;
@@ -433,13 +519,55 @@ public class Client {
         }
 
         Integer gameID = getGameID();
+        renderBoard(gameID, ChessGame.TeamColor.WHITE);
 
-        renderBoard(gameID);
+        gameInProgress = true;
+        while (gameInProgress) {
+            System.out.println();
+            runObserveMenu(gameID);
+        }
     }
 
-    private void renderBoard(Integer gameID) {
-        boardRenderer.drawBoard(false);
+    private void runObserveMenu(int gameID) {
+        printObserveMenu();
+        String line = scanner.nextLine().trim();
         System.out.println();
-        boardRenderer.drawBoard(true);
+
+        switch (line) {
+            case ("1"):
+                printObserveHelp();
+                break;
+            case ("2"):
+                renderBoard(gameID, ChessGame.TeamColor.WHITE);
+                break;
+            case ("3"):
+                leaveGame();
+                break;
+            case ("4"):
+                highlightMoves();
+                break;
+            case ("clear"):
+                clearDB();
+                loggedIn = false;
+                break;
+        }
+    }
+
+    private void printObserveMenu() {
+        System.out.println("1: Help");
+        System.out.println("2: Redraw Chess Board");
+        System.out.println("3: Leave Game");
+        System.out.print("4: Highlight Legal Moves\n>>> ");
+    }
+
+    private void printObserveHelp() {
+        System.out.print(EscapeSequences.SET_BOLD_ITALIC);
+
+        System.out.println("1: Display this message again");
+        System.out.println("2: Redraw the current state of the chess board");
+        System.out.println("3: Leave the game and return to the login menu");
+        System.out.println("4: Show the legal moves for a given <POSITION> (e.g. h8)");
+
+        System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
     }
 }
