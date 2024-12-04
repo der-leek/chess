@@ -49,12 +49,20 @@ public class GameService {
         dataAccess.updateGame(joinedGame);
     }
 
-    public ListGameResponse listGames(String authToken) throws AuthorizationException, DataAccessException {
+    public GameData findGame(int gameID, String authToken)
+            throws AuthorizationException, DataAccessException {
+        authorize(authToken);
+        return dataAccess.findGameData(gameID);
+    }
+
+    public ListGameResponse listGames(String authToken)
+            throws AuthorizationException, DataAccessException {
         authorize(authToken);
         return new ListGameResponse(dataAccess.listGames());
     }
 
-    private AuthData authorize(String authToken) throws AuthorizationException, DataAccessException {
+    private AuthData authorize(String authToken)
+            throws AuthorizationException, DataAccessException {
         var authData = dataAccess.findAuthData(authToken);
         if (authData == null) {
             throw new AuthorizationException("Unauthorized");

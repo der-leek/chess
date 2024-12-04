@@ -17,11 +17,11 @@ public class Serializer {
                 case ("CONNECT"):
                     return context.deserialize(jsonObject, ConnectCommand.class);
                 case ("MAKE_MOVE"):
-                    // command = context.deserialize(jsonObject, MakeMoveCommand.class);
+                    return context.deserialize(jsonObject, MakeMoveCommand.class);
                 case ("LEAVE"):
-                    // command = context.deserialize(jsonObject, LeaveCommand.class);
+                    return context.deserialize(jsonObject, LeaveGameCommand.class);
                 case ("RESIGN"):
-                    // command = context.deserialize(jsonObject, ResignCommand.class);
+                    return context.deserialize(jsonObject, ResignCommand.class);
                 default:
                     return null;
             }

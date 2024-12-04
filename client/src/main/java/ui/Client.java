@@ -11,9 +11,13 @@ import chess.ChessGame;
 import model.GameData;
 import serializer.Serializer;
 import server.ServerFacade;
+import server.ServerMessageObserver;
+import server.WebSocketCommunicator;
+import websocket.commands.*;
+import websocket.messages.*;
 
-public class Client {
-    public static void main(String[] args) {
+public class Client implements ServerMessageObserver {
+    public static void main(String[] args) throws Exception {
         System.out.println();
         System.out.print(EscapeSequences.SET_BOLD_ITALIC);
         System.out.println("Welcome to CS240 Chess!");
@@ -24,36 +28,70 @@ public class Client {
         }
     }
 
-    private static void runClient(Scanner scanner) {
+    private static void runClient(Scanner scanner) throws Exception {
         Client client = new Client(scanner);
         while (true) {
             if (!client.loggedIn) {
-                System.out.println();
                 client.runPreLoginMenu();
             } else {
-                System.out.println();
                 client.runPostLoginMenu();
             }
         }
     }
 
     private String user;
-    private boolean loggedIn;
     private String authToken;
+    private boolean loggedIn;
+    private ChessGame chessGame;
     private boolean gameInProgress;
+    private ChessGame.TeamColor teamColor;
     private Map<Integer, Integer> dbGames;
     private final Scanner scanner;
+    private final WebSocketCommunicator ws;
     private final ServerFacade serverFacade;
     private final BoardRenderer boardRenderer;
     private final Serializer serializer = new Serializer();
 
-    public Client(Scanner scanner) {
-        boardRenderer = new BoardRenderer(new ChessBoard());
-        serverFacade = new ServerFacade(8080);
+    public Client(Scanner scanner) throws Exception {
+        int port = 8080;
+        boardRenderer = new BoardRenderer();
+        serverFacade = new ServerFacade(port);
+        ws = new WebSocketCommunicator(port, this);
+
         dbGames = new HashMap<>();
         this.scanner = scanner;
         loggedIn = false;
         authToken = null;
+    }
+
+    @Override
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case NOTIFICATION -> displayNotification((NotificationMessage) message);
+            case ERROR -> displayError((ErrorMessage) message);
+            case LOAD_GAME -> loadGame((LoadGameMessage) message);
+        }
+    }
+
+    public void displayNotification(NotificationMessage message) {
+        printBoldItalic(message.getMessage());
+    }
+
+    public void displayError(ErrorMessage message) {
+        printBoldItalic(message.getErrorMessage());
+    }
+
+    public void loadGame(LoadGameMessage message) {
+        chessGame = message.getGame();
+        if (chessGame == null) {
+            printBoldItalic("There was an error retrieving the game");
+        }
+
+        if (teamColor == null) {
+            renderBoard(chessGame.getBoard(), ChessGame.TeamColor.WHITE);
+        } else {
+            renderBoard(chessGame.getBoard(), teamColor);
+        }
     }
 
     private void printBoldItalic(String message) {
@@ -71,28 +109,17 @@ public class Client {
     }
 
     private void runPreLoginMenu() {
+        System.out.println();
         printPreLoginMenu();
         String line = scanner.nextLine().trim();
         System.out.println();
 
         switch (line) {
-            case ("1"):
-                register();
-                break;
-            case ("2"):
-                login();
-                break;
-            case ("3"):
-                help();
-                break;
-            case ("4"):
-                System.exit(0);
-                break;
-            case ("clear"):
-                clearDB();
-                break;
-            default:
-                break;
+            case "1" -> register();
+            case "2" -> login();
+            case "3" -> help();
+            case "4" -> System.exit(0);
+            case "clear" -> clearDB();
         }
     }
 
@@ -106,6 +133,9 @@ public class Client {
         if (result.get("statusCode").equals("200")) {
             printBoldItalic("DB cleared!");
         }
+
+        loggedIn = false;
+        gameInProgress = false;
     }
 
     private void register() {
@@ -174,6 +204,7 @@ public class Client {
         }
 
         getAuthToken(response);
+        listGames(false);
     }
 
     private void getUsername() {
@@ -199,7 +230,7 @@ public class Client {
     }
 
     private void printPostLoginMenu() {
-        System.out.printf("Welcome, %s. Enter a number to proceed:\n", user);
+        System.out.printf("Welcome, %s\n", user);
         System.out.println("1: Help");
         System.out.println("2: Logout");
         System.out.println("3: Create Game");
@@ -209,33 +240,19 @@ public class Client {
     }
 
     private void runPostLoginMenu() {
+        System.out.println();
         printPostLoginMenu();
         String line = scanner.nextLine().trim();
         System.out.println();
 
         switch (line) {
-            case ("1"):
-                loginHelp();
-                break;
-            case ("2"):
-                logout();
-                break;
-            case ("3"):
-                createGame();
-                break;
-            case ("4"):
-                listGames();
-                break;
-            case ("5"):
-                playGame();
-                break;
-            case ("6"):
-                observeGame();
-                break;
-            case ("clear"):
-                clearDB();
-                loggedIn = false;
-                break;
+            case "1" -> loginHelp();
+            case "2" -> logout();
+            case "3" -> createGame();
+            case "4" -> listGames(true);
+            case "5" -> playGame();
+            case "6" -> observeGame();
+            case "clear" -> clearDB();
         }
     }
 
@@ -293,7 +310,7 @@ public class Client {
             printBoldItalic(tryAgain);
         }
 
-        listGames();
+        listGames(true);
     }
 
     private String getGameName() {
@@ -302,46 +319,54 @@ public class Client {
         return gameName;
     }
 
-    private void listGames() {
+    private void listGames(boolean shouldPrint) {
         if (authToken == null) {
             return;
         }
 
+        ArrayList<GameData> games = retrieveGames();
+        if (games == null || games.isEmpty()) {
+            printBoldItalic("There are no games. Start by creating one.");
+        }
+
+        processGames(games, shouldPrint);
+    }
+
+    private ArrayList<GameData> retrieveGames() {
         var response = serverFacade.listGames(authToken);
         String tryAgain = "An error occurred while listing games. Please try again.";
 
         if (response == null) {
             printBoldItalic(tryAgain);
-            return;
+            return null;
         }
 
         var statusCode = response.get("statusCode");
         if (!statusCode.equals("200")) {
             printBoldItalic(tryAgain);
-            return;
+            return null;
         }
 
-        printGames(response);
-    }
-
-    private void printGames(Map<String, String> response) {
         Type type = new TypeToken<Map<String, ArrayList<GameData>>>() {}.getType();
         Map<String, ArrayList<GameData>> body = serializer.fromJson(response.get("body"), type);
 
-        ArrayList<GameData> games = body.get("games");
+        return body.get("games");
+    }
 
-        if (games.isEmpty()) {
-            printBoldItalic("There are no games. Start by creating one.");
-            return;
-        }
-
+    private void processGames(ArrayList<GameData> games, boolean shouldPrint) {
         for (int i = 0; i < games.size(); i++) {
             var game = games.get(i);
             dbGames.put(i + 1, game.gameID());
-            System.out.printf("%d: %s\n", i + 1, game.gameName());
-            System.out.printf(" White Player: %s\n", game.whiteUsername());
-            System.out.printf(" Black Player: %s\n", game.blackUsername());
+            if (shouldPrint) {
+                printGame(i, game);
+            }
         }
+    }
+
+    private void printGame(int i, GameData game) {
+        System.out.printf("%d: %s\n", i + 1, game.gameName());
+        System.out.printf(" White Player: %s\n", game.whiteUsername());
+        System.out.printf(" Black Player: %s\n", game.blackUsername());
     }
 
     private void playGame() {
@@ -355,7 +380,7 @@ public class Client {
         }
 
         Integer gameID = getGameID();
-        ChessGame.TeamColor teamColor = getColor();
+        getColor();
 
         var response = serverFacade.joinGame(gameID, teamColor, authToken);
         String tryAgain = "An error occurred while joining that game. Please try again.";
@@ -374,13 +399,15 @@ public class Client {
             return;
         }
 
-        renderBoard(gameID, teamColor);
+        try {
+            ws.send(new ConnectCommand(user, authToken, gameID, teamColor));
+        } catch (Exception ex) {
+            printBoldItalic(ex.getMessage());
+            return;
+        }
 
         gameInProgress = true;
-        while (gameInProgress) {
-            System.out.println();
-            runGameplayMenu(gameID, teamColor);
-        }
+        runGameplayMenu(gameID, teamColor);
     }
 
     private Integer getGameID() {
@@ -409,7 +436,7 @@ public class Client {
         }
     }
 
-    private ChessGame.TeamColor getColor() {
+    private void getColor() {
         System.out.print("Team Color: ");
         String color = scanner.nextLine().trim();
 
@@ -425,45 +452,39 @@ public class Client {
             validBlack = color.toUpperCase().equals("BLACK");
         }
 
-        return colorMap.get(color.toUpperCase());
+        teamColor = colorMap.get(color.toUpperCase());
     }
 
-    private void renderBoard(Integer gameID, ChessGame.TeamColor teamColor) {
+    private void renderBoard(ChessBoard board, ChessGame.TeamColor teamColor) {
         boolean reversed = (teamColor == ChessGame.TeamColor.WHITE ? false : true);
 
         System.out.println();
-        boardRenderer.drawBoard(reversed);
+        boardRenderer.drawBoard(board, reversed);
         System.out.println();
     }
 
     private void runGameplayMenu(int gameID, ChessGame.TeamColor teamColor) {
-        printGameplayMenu();
-        String line = scanner.nextLine().trim();
-        System.out.println();
+        while (gameInProgress) {
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException ex) {
+                // trivial if sleep is interrupted
+            }
 
-        switch (line) {
-            case ("1"):
-                printGameplayHelp();
-                break;
-            case ("2"):
-                renderBoard(gameID, teamColor);
-                break;
-            case ("3"):
-                leaveGame();
-                break;
-            case ("4"):
-                makeMove();
-                break;
-            case ("5"):
-                resign();
-                break;
-            case ("6"):
-                highlightMoves();
-                break;
-            case ("clear"):
-                clearDB();
-                loggedIn = false;
-                break;
+            System.out.println();
+            printGameplayMenu();
+            String line = scanner.nextLine().trim();
+            System.out.println();
+
+            switch (line) {
+                case "1" -> printGameplayHelp();
+                case "2" -> renderBoard(chessGame.getBoard(), teamColor);
+                case "3" -> leaveGame();
+                case "4" -> makeMove();
+                case "5" -> resign(gameID);
+                case "6" -> highlightMoves();
+                case "clear" -> clearDB();
+            }
         }
     }
 
@@ -499,7 +520,11 @@ public class Client {
         // send MAKE MOVE request via websocket
     }
 
-    private void resign() {
+    private void resign(int gameID) {
+        // System.out.print("Are you sure you want to resign? (y/n) ");
+        // String line = scanner.nextLine().trim();
+        // System.out.println();
+
         // send RESIGN request via websocket
     }
 
@@ -519,37 +544,38 @@ public class Client {
         }
 
         Integer gameID = getGameID();
-        renderBoard(gameID, ChessGame.TeamColor.WHITE);
+
+        try {
+            ws.send(new ConnectCommand(user, authToken, gameID, null));
+        } catch (Exception ex) {
+            printBoldItalic(ex.getMessage());
+            return;
+        }
 
         gameInProgress = true;
-        while (gameInProgress) {
-            System.out.println();
-            runObserveMenu(gameID);
-        }
+        runObserveMenu(gameID);
     }
 
     private void runObserveMenu(int gameID) {
-        printObserveMenu();
-        String line = scanner.nextLine().trim();
-        System.out.println();
+        while (gameInProgress) {
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                // trivial if sleep is interrupted
+            }
 
-        switch (line) {
-            case ("1"):
-                printObserveHelp();
-                break;
-            case ("2"):
-                renderBoard(gameID, ChessGame.TeamColor.WHITE);
-                break;
-            case ("3"):
-                leaveGame();
-                break;
-            case ("4"):
-                highlightMoves();
-                break;
-            case ("clear"):
-                clearDB();
-                loggedIn = false;
-                break;
+            System.out.println();
+            printObserveMenu();
+            String line = scanner.nextLine().trim();
+            System.out.println();
+
+            switch (line) {
+                case "1" -> printObserveHelp();
+                case "2" -> renderBoard(chessGame.getBoard(), ChessGame.TeamColor.WHITE);
+                case "3" -> leaveGame();
+                case "4" -> highlightMoves();
+                case "clear" -> clearDB();
+            }
         }
     }
 
