@@ -8,21 +8,19 @@ public class BoardRenderer {
     private final PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
     private final String[] columns = {"a", "b", "c", "d", "e", "f", "g", "h"};
     private final int boardSize = 8;
-    private ChessBoard board;
 
-    public BoardRenderer(ChessBoard board) {
-        this.board = board;
-        this.board.resetBoard();
-    }
+    public BoardRenderer() {}
 
     public static void main(String[] args) {
-        var br = new BoardRenderer(new ChessBoard());
-        br.drawBoard(false);
+        var br = new BoardRenderer();
+        ChessBoard board = new ChessBoard();
+        board.resetBoard();
+        br.drawBoard(board, false);
         br.out.println();
-        br.drawBoard(true);;
+        br.drawBoard(board, true);;
     }
 
-    public void drawBoard(boolean reversed) {
+    public void drawBoard(ChessBoard board, boolean reversed) {
         out.print(EscapeSequences.SET_TEXT_BOLD);
         drawHeader(reversed);
 
@@ -31,11 +29,11 @@ public class BoardRenderer {
         boolean condition = true;
 
         while (condition) {
-            drawRow(i, EscapeSequences.SET_BG_COLOR_WHITE, EscapeSequences.SET_BG_COLOR_BLACK,
-                    reversed);
+            drawRow(board, i, EscapeSequences.SET_BG_COLOR_WHITE,
+                    EscapeSequences.SET_BG_COLOR_BLACK, reversed);
             i += step;
-            drawRow(i, EscapeSequences.SET_BG_COLOR_BLACK, EscapeSequences.SET_BG_COLOR_WHITE,
-                    reversed);
+            drawRow(board, i, EscapeSequences.SET_BG_COLOR_BLACK,
+                    EscapeSequences.SET_BG_COLOR_WHITE, reversed);
             i += step;
             condition = (reversed ? i <= boardSize : i > 0);
         }
@@ -44,7 +42,7 @@ public class BoardRenderer {
         out.print(EscapeSequences.RESET_TEXT_BOLD_FAINT);
     }
 
-    private void drawSquare(int x, int y, String backgroundColor) {
+    private void drawSquare(ChessBoard board, int x, int y, String backgroundColor) {
         ChessPiece piece = board.getPiece(new ChessPosition(y, x));
         StringBuilder output = new StringBuilder();
         output.append(backgroundColor);
@@ -68,7 +66,8 @@ public class BoardRenderer {
         output.append(String.format(" %s ", piece.toString()));
     }
 
-    private void drawRow(int index, String startColor, String endColor, boolean reversed) {
+    private void drawRow(ChessBoard board, int index, String startColor, String endColor,
+            boolean reversed) {
         out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY);
         out.printf(" %s ", index);
 
@@ -77,9 +76,9 @@ public class BoardRenderer {
         boolean condition = true;
 
         while (condition) {
-            drawSquare(i, index, startColor);
+            drawSquare(board, i, index, startColor);
             i += step;
-            drawSquare(i, index, endColor);
+            drawSquare(board, i, index, endColor);
             i += step;
             condition = (reversed ? i > 0 : i <= boardSize);
         }
