@@ -547,6 +547,11 @@ public class Client implements ServerMessageObserver {
     }
 
     private void makeMove(int gameID) {
+        if (chessGame.getTeamTurn() != teamColor) {
+            printBoldItalic("It is not your turn");
+            return;
+        }
+
         System.out.print("Starting position: ");
         var startingPosition = getSelectedPosition();
 
@@ -643,7 +648,7 @@ public class Client implements ServerMessageObserver {
     }
 
     private void highlightMoves() {
-        System.out.print("Enter the position of the piece whose moves should be highlighted: ");
+        System.out.print("Enter position to highlight moves: ");
 
         var selectedPosition = getSelectedPosition();
 

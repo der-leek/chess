@@ -66,6 +66,8 @@ public class BoardRenderer {
 
         drawHeader();
         out.print(EscapeSequences.RESET_TEXT_BOLD_FAINT);
+        selectedPosition = null;
+        validPositions = null;
     }
 
     private void extractMoves(Collection<ChessMove> moves) {

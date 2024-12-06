@@ -1,5 +1,6 @@
 package server;
 
+import chess.*;
 import spark.*;
 import service.*;
 import requests.*;
@@ -9,7 +10,6 @@ import model.GameData;
 import websocket.commands.*;
 import websocket.messages.*;
 import java.util.Map;
-import chess.ChessGame;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.io.IOException;
@@ -29,6 +29,8 @@ public class Server {
     private final UserService userService;
     private final GameService gameService;
     private final Serializer serializer = new Serializer();
+    private final Map<Integer, Character> columns =
+            Map.of(1, 'a', 2, 'b', 3, 'c', 4, 'd', 5, 'e', 6, 'f', 7, 'g', 8, 'h');
 
     public Server() {
         try {
@@ -91,7 +93,7 @@ public class Server {
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, command, user, teamColor, game);
-                case MAKE_MOVE -> makeMove(session, command, user, teamColor);
+                case MAKE_MOVE -> makeMove(session, command, user, teamColor, game);
                 case LEAVE -> leaveGame(session, command, user, teamColor);
                 case RESIGN -> resign(session, command, user, teamColor);
             }
@@ -158,7 +160,7 @@ public class Server {
             UserGameCommand command, String username, ChessGame.TeamColor teamColor, GameData game)
             throws IOException {
 
-        sendServerMessage(rootSession, new LoadGameMessage(game.game(), teamColor));
+        sendServerMessage(rootSession, new LoadGameMessage(game.game()));
 
         for (var ses : currentSessions) {
             if (ses.equals(rootSession)) {
@@ -178,18 +180,99 @@ public class Server {
     }
 
     private void makeMove(Session rootSession, UserGameCommand command, String username,
-            ChessGame.TeamColor teamColor) {
+            ChessGame.TeamColor teamColor, GameData gameData) throws Exception {
+        if (teamColor == null) {
+            throw new Exception("observers cannot make moves");
+        }
 
+        int gameID = command.getGameID();
+        var currentSessions = sessions.get(gameID);
+        verifySession(rootSession, currentSessions);
+
+        var userGame = gameData.game();
+        verifyTurn(teamColor, userGame);
+
+        userGame.makeMove(command.getMove());
+        gameService.saveGame(gameID, command.getAuthToken(), userGame);
+
+        sendMakeMoveMessages(rootSession, currentSessions, username, command.getMove(), userGame,
+                gameData);
     }
+
+    private void verifySession(Session rootSession, HashSet<Session> currentSessions) {
+        if (currentSessions == null || !currentSessions.contains(rootSession)) {
+            throw new NullPointerException("the game ID does not match the current session");
+        }
+    }
+
+    private void verifyTurn(ChessGame.TeamColor teamColor, ChessGame userGame) throws Exception {
+        if (teamColor != userGame.getTeamTurn()) {
+            throw new Exception("it is not your turn");
+        }
+    }
+
+    private void sendMakeMoveMessages(Session rootSession, HashSet<Session> currentSessions,
+            String username, ChessMove move, ChessGame game, GameData gameData) throws IOException {
+        for (var ses : currentSessions) {
+            sendServerMessage(ses, new LoadGameMessage(game));
+
+            if (ses != rootSession) {
+                String message = parseMove(move, username);
+                sendServerMessage(ses, new NotificationMessage(message));
+            }
+
+            sendGameStateMessage(ses, game, gameData);
+        }
+    }
+
+    private void sendGameStateMessage(Session ses, ChessGame game, GameData data)
+            throws IOException {
+
+        ChessGame.TeamColor[] teams = {ChessGame.TeamColor.WHITE, ChessGame.TeamColor.BLACK};
+        String[] usernames = {data.whiteUsername(), data.blackUsername()};
+        String[] statuses = {" is in check", " is in checkmate", " is in stalemate"};
+
+        String message = null;
+        for (int i = 0; i < teams.length && message == null; i++) {
+            if (game.isInCheck(teams[i])) {
+                message = usernames[i] + statuses[0];
+            } else if (game.isInCheckmate(teams[i])) {
+                message = usernames[i] + statuses[1];
+            } else if (game.isInStalemate(teams[i])) {
+                message = usernames[i] + statuses[2];
+            }
+        }
+
+        if (message != null) {
+            sendServerMessage(ses, new NotificationMessage(message));
+        }
+    }
+
+    private String parseMove(ChessMove move, String username) {
+
+        var builder = new StringBuilder();
+        builder.append(username).append(" has moved from ");
+        builder.append(columns.get(move.getStartPosition().getColumn()));
+        builder.append(move.getStartPosition().getRow());
+        builder.append(" to ");
+        builder.append(columns.get(move.getEndPosition().getColumn()));
+        builder.append(move.getEndPosition().getRow());
+        if (move.getPromotionPiece() != null) {
+            builder.append(" and promoted to a ");
+            builder.append(move.getPromotionPiece().toString().toLowerCase());
+        }
+        builder.append(".");
+
+        return builder.toString();
+    }
+
+
 
     private void leaveGame(Session rootSession, UserGameCommand command, String username,
             ChessGame.TeamColor teamColor) throws Exception {
         int gameID = command.getGameID();
         var currentSessions = sessions.get(gameID);
-
-        if (currentSessions == null || !currentSessions.contains(rootSession)) {
-            throw new NullPointerException("the game ID does not match the current session");
-        }
+        verifySession(rootSession, currentSessions);
 
         if (teamColor != null) {
             gameService.leaveGame(gameID, command.getAuthToken(), teamColor);

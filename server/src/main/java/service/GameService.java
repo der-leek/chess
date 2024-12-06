@@ -49,6 +49,20 @@ public class GameService {
         dataAccess.updateGame(joinedGame);
     }
 
+    public void saveGame(int gameID, String authToken, ChessGame newGameState)
+            throws AuthorizationException, DataAccessException {
+        authorize(authToken);
+
+        var oldGame = dataAccess.findGameData(gameID);
+        if (oldGame == null) {
+            throw new NullPointerException("Game does not exist");
+        }
+
+        var updatedGame = new GameData(gameID, oldGame.whiteUsername(), oldGame.blackUsername(),
+                oldGame.gameName(), newGameState);
+        dataAccess.updateGame(updatedGame);
+    }
+
     public void leaveGame(int gameID, String authToken, ChessGame.TeamColor teamColor)
             throws AuthorizationException, DataAccessException {
 

@@ -138,11 +138,6 @@ public class ChessGame implements Cloneable {
         if (invalidMove) {
             throw new InvalidMoveException("Invalid move");
         }
-
-        boolean wrongTurn = (piece.getTeamColor() != getTeamTurn());
-        if (wrongTurn) {
-            throw new InvalidMoveException("It's not your turn");
-        }
     }
 
     /**
