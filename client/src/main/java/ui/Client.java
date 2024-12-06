@@ -2,13 +2,13 @@ package ui;
 
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
+import chess.*;
 import com.google.gson.reflect.TypeToken;
-import chess.ChessBoard;
-import chess.ChessGame;
-import model.GameData;
+import model.*;
 import serializer.Serializer;
 import server.ServerFacade;
 import server.ServerMessageObserver;
@@ -51,6 +51,8 @@ public class Client implements ServerMessageObserver {
     private final ServerFacade serverFacade;
     private final BoardRenderer boardRenderer;
     private final Serializer serializer = new Serializer();
+    private final Map<Character, Integer> columns =
+            Map.of('a', 1, 'b', 2, 'c', 3, 'd', 4, 'e', 5, 'f', 6, 'g', 7, 'h', 8);
 
     public Client(Scanner scanner) throws Exception {
         int port = 8080;
@@ -480,6 +482,15 @@ public class Client implements ServerMessageObserver {
         System.out.println();
     }
 
+    private void renderBoard(ChessBoard board, ChessGame.TeamColor teamColor,
+            Collection<ChessMove> validMoves, ChessPosition selectedPosition) {
+        boolean reversed = (teamColor == ChessGame.TeamColor.WHITE ? false : true);
+
+        System.out.println();
+        boardRenderer.drawBoard(board, reversed, validMoves, selectedPosition);
+        System.out.println();
+    }
+
     private void runGameplayMenu(int gameID, ChessGame.TeamColor teamColor) {
         while (gameInProgress) {
             System.out.println();
@@ -537,6 +548,35 @@ public class Client implements ServerMessageObserver {
         // send MAKE MOVE request via websocket
     }
 
+    private ChessPosition getSelectedPosition() {
+        String line;
+        Object row = null;
+        int col = 0;;
+
+        boolean invalidPosition = true;
+        while (invalidPosition) {
+            line = scanner.nextLine().trim();
+            col = columns.get(line.charAt(0));
+            row = parseRow(line);
+
+            invalidPosition = (row == null || col < 1 || col > 8);
+            if (invalidPosition) {
+                System.out.print("Invalid position. Try again: ");
+            }
+        }
+
+        var selectedPosition = new ChessPosition((Integer) row, col);
+        return selectedPosition;
+    }
+
+    private Integer parseRow(String line) {
+        try {
+            return Character.getNumericValue(line.charAt(1));
+        } catch (ClassCastException ex) {
+            return 0;
+        }
+    }
+
     private void resign(int gameID) {
         // System.out.print("Are you sure you want to resign? (y/n) ");
         // String line = scanner.nextLine().trim();
@@ -546,8 +586,12 @@ public class Client implements ServerMessageObserver {
     }
 
     private void highlightMoves() {
-        // request board via websocket
-        // redraw board with highlighted moves (modify BoardRenderer)
+        System.out.print("Enter the position of the piece whose moves should be highlighted: ");
+
+        var selectedPosition = getSelectedPosition();
+
+        renderBoard(chessGame.getBoard(), teamColor, chessGame.validMoves(selectedPosition),
+                selectedPosition);
     }
 
     private void observeGame() {
