@@ -68,6 +68,11 @@ public class ChessGame implements Cloneable {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
+
+        if (piece == null) {
+            return new HashSet<>();
+        }
+
         Collection<ChessMove> moves = piece.pieceMoves(board, startPosition);
         Collection<ChessMove> invalidMoves = new HashSet<ChessMove>();
 
@@ -106,15 +111,7 @@ public class ChessGame implements Cloneable {
         ChessPosition startPosition = move.getStartPosition();
         ChessPiece piece = board.getPiece(startPosition);
 
-        if (piece == null) {
-            throw new InvalidMoveException();
-        }
-
-        boolean invalidMove = (!validMoves(startPosition).contains(move));
-        boolean wrongTurn = (piece.getTeamColor() != getTeamTurn());
-        if (invalidMove | wrongTurn) {
-            throw new InvalidMoveException();
-        }
+        validateMove(move, startPosition, piece);
 
         if (promotionPiece != null) {
             piece = new ChessPiece(getTeamTurn(), promotionPiece);
@@ -123,6 +120,29 @@ public class ChessGame implements Cloneable {
         executeMove(board, piece, move);
         setTeamTurn(getTeamTurn().toggle());
         teamPositions.refreshPositions(board);
+    }
+
+    private void validateMove(ChessMove move, ChessPosition startPosition, ChessPiece piece)
+            throws InvalidMoveException {
+        if (piece == null) {
+            throw new InvalidMoveException("You cannot move an empty piece");
+        }
+
+        TeamColor pieceColor = piece.getTeamColor();
+        if (pieceColor != teamTurn) {
+            throw new InvalidMoveException(
+                    "You cannot move a " + pieceColor.toString().toLowerCase() + " piece");
+        }
+
+        boolean invalidMove = (!validMoves(startPosition).contains(move));
+        if (invalidMove) {
+            throw new InvalidMoveException("Invalid move");
+        }
+
+        boolean wrongTurn = (piece.getTeamColor() != getTeamTurn());
+        if (wrongTurn) {
+            throw new InvalidMoveException("It's not your turn");
+        }
     }
 
     /**
