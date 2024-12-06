@@ -1,40 +1,38 @@
 package websocket.commands;
 
 import java.util.Objects;
+import chess.ChessMove;
 
 /**
  * Represents a command a user can send the server over a websocket
  *
- * Note: You can add to this class, but you should not alter the existing
- * methods.
+ * Note: You can add to this class, but you should not alter the existing methods.
  */
 public class UserGameCommand {
 
     private final CommandType commandType;
-    private final String username;
     private final String authToken;
     private final Integer gameID;
+    private final ChessMove move;
 
-    public UserGameCommand(CommandType commandType, String username, String authToken, Integer gameID) {
+    public UserGameCommand(CommandType commandType, String authToken, Integer gameID,
+            ChessMove move) {
         this.commandType = commandType;
-        this.username = username;
         this.authToken = authToken;
         this.gameID = gameID;
+        this.move = move;
+    }
+
+    public UserGameCommand(CommandType commandType, String authToken, Integer gameID) {
+        this(commandType, authToken, gameID, null);
     }
 
     public enum CommandType {
-        CONNECT,
-        MAKE_MOVE,
-        LEAVE,
-        RESIGN
+        CONNECT, MAKE_MOVE, LEAVE, RESIGN
     }
 
     public CommandType getCommandType() {
         return commandType;
-    }
-
-    public String getUsername() {
-        return username;
     }
 
     public String getAuthToken() {
@@ -46,6 +44,10 @@ public class UserGameCommand {
         return gameID;
     }
 
+    public ChessMove getMove() {
+        return move;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -55,9 +57,9 @@ public class UserGameCommand {
             return false;
         }
         UserGameCommand that = (UserGameCommand) o;
-        return getCommandType() == that.getCommandType() &&
-                Objects.equals(getAuthToken(), that.getAuthToken()) &&
-                Objects.equals(getGameID(), that.getGameID());
+        return getCommandType() == that.getCommandType()
+                && Objects.equals(getAuthToken(), that.getAuthToken())
+                && Objects.equals(getGameID(), that.getGameID());
     }
 
     @Override

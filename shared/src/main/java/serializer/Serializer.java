@@ -2,32 +2,9 @@ package serializer;
 
 import com.google.gson.*;
 import java.lang.reflect.Type;
-import websocket.commands.*;
 import websocket.messages.*;
 
 public class Serializer {
-    public static class UserGameCommandDeserializer implements JsonDeserializer<UserGameCommand> {
-        @Override
-        public UserGameCommand deserialize(JsonElement json, Type typeOfT,
-                JsonDeserializationContext context) {
-            JsonObject jsonObject = json.getAsJsonObject();
-            String type = jsonObject.get("commandType").getAsString();
-
-            switch (type) {
-                case ("CONNECT"):
-                    return context.deserialize(jsonObject, ConnectCommand.class);
-                case ("MAKE_MOVE"):
-                    return context.deserialize(jsonObject, MakeMoveCommand.class);
-                case ("LEAVE"):
-                    return context.deserialize(jsonObject, LeaveGameCommand.class);
-                case ("RESIGN"):
-                    return context.deserialize(jsonObject, ResignCommand.class);
-                default:
-                    return null;
-            }
-        }
-    }
-
     public static class ServerMessageDeserializer implements JsonDeserializer<ServerMessage> {
         @Override
         public ServerMessage deserialize(JsonElement json, Type typeOfT,
@@ -52,7 +29,6 @@ public class Serializer {
 
     public Serializer() {
         this.gson = new GsonBuilder()
-                .registerTypeAdapter(UserGameCommand.class, new UserGameCommandDeserializer())
                 .registerTypeAdapter(ServerMessage.class, new ServerMessageDeserializer()).create();
     }
 

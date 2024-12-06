@@ -53,13 +53,25 @@ public class UserService {
     }
 
     public void logout(LogoutRequest req) throws AuthorizationException, DataAccessException {
-        var authData = dataAccess.findAuthData(req.authToken());
+        var authData = authorize(req.authToken());
+
+        dataAccess.deleteAuth(authData.authToken());
+    }
+
+    public String getUsername(String authToken) throws AuthorizationException, DataAccessException {
+        var authData = authorize(authToken);
+        return authData.username();
+    }
+
+    private AuthData authorize(String authToken)
+            throws AuthorizationException, DataAccessException {
+        var authData = dataAccess.findAuthData(authToken);
 
         if (authData == null) {
             throw new AuthorizationException("Unauthorized");
         }
 
-        dataAccess.deleteAuth(authData.authToken());
+        return authData;
     }
 
     private AuthData createAuth(String username)

@@ -74,17 +74,32 @@ public class Client implements ServerMessageObserver {
     }
 
     public void displayNotification(NotificationMessage message) {
+        System.out.println();
+        System.out.println();
+
         printBoldItalic(message.getMessage());
+
+        System.out.println();
+        System.out.print(">>> ");
     }
 
     public void displayError(ErrorMessage message) {
+        System.out.println();
+        System.out.println();
+
         printBoldItalic(message.getErrorMessage());
+
+        System.out.println();
+        System.out.print(">>> ");
     }
 
     public void loadGame(LoadGameMessage message) {
         chessGame = message.getGame();
+        System.out.println();
+
         if (chessGame == null) {
             printBoldItalic("There was an error retrieving the game");
+            return;
         }
 
         if (teamColor == null) {
@@ -92,6 +107,8 @@ public class Client implements ServerMessageObserver {
         } else {
             renderBoard(chessGame.getBoard(), teamColor);
         }
+
+        System.out.print(">>> ");
     }
 
     private void printBoldItalic(String message) {
@@ -400,7 +417,7 @@ public class Client implements ServerMessageObserver {
         }
 
         try {
-            ws.send(new ConnectCommand(user, authToken, gameID, teamColor));
+            ws.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
         } catch (Exception ex) {
             printBoldItalic(ex.getMessage());
             return;
@@ -465,12 +482,6 @@ public class Client implements ServerMessageObserver {
 
     private void runGameplayMenu(int gameID, ChessGame.TeamColor teamColor) {
         while (gameInProgress) {
-            try {
-                Thread.sleep(50);
-            } catch (InterruptedException ex) {
-                // trivial if sleep is interrupted
-            }
-
             System.out.println();
             printGameplayMenu();
             String line = scanner.nextLine().trim();
@@ -479,7 +490,7 @@ public class Client implements ServerMessageObserver {
             switch (line) {
                 case "1" -> printGameplayHelp();
                 case "2" -> renderBoard(chessGame.getBoard(), teamColor);
-                case "3" -> leaveGame();
+                case "3" -> leaveGame(gameID);
                 case "4" -> makeMove();
                 case "5" -> resign(gameID);
                 case "6" -> highlightMoves();
@@ -510,8 +521,14 @@ public class Client implements ServerMessageObserver {
         System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
     }
 
-    private void leaveGame() {
-        // send LEAVE request via websocket
+    private void leaveGame(int gameID) {
+        try {
+            ws.send(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
+        } catch (Exception ex) {
+            printBoldItalic(ex.getMessage());
+            return;
+        }
+
         gameInProgress = false;
     }
 
@@ -546,7 +563,7 @@ public class Client implements ServerMessageObserver {
         Integer gameID = getGameID();
 
         try {
-            ws.send(new ConnectCommand(user, authToken, gameID, null));
+            ws.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
         } catch (Exception ex) {
             printBoldItalic(ex.getMessage());
             return;
@@ -558,12 +575,6 @@ public class Client implements ServerMessageObserver {
 
     private void runObserveMenu(int gameID) {
         while (gameInProgress) {
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                // trivial if sleep is interrupted
-            }
-
             System.out.println();
             printObserveMenu();
             String line = scanner.nextLine().trim();
@@ -572,7 +583,7 @@ public class Client implements ServerMessageObserver {
             switch (line) {
                 case "1" -> printObserveHelp();
                 case "2" -> renderBoard(chessGame.getBoard(), ChessGame.TeamColor.WHITE);
-                case "3" -> leaveGame();
+                case "3" -> leaveGame(gameID);
                 case "4" -> highlightMoves();
                 case "clear" -> clearDB();
             }

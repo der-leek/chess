@@ -9,6 +9,7 @@ import model.GameData;
 import websocket.commands.*;
 import websocket.messages.*;
 import java.util.Map;
+import chess.ChessGame;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.io.IOException;
@@ -16,11 +17,13 @@ import serializer.Serializer;
 import com.google.gson.JsonSyntaxException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 
 @WebSocket
 public class Server {
     private Map<Integer, HashSet<Session>> sessions;
+    private Map<Session, HashSet<Integer>> reverseSessions;
     private final DataAccess dataAccess;
     private final ClearService clearService;
     private final UserService userService;
@@ -37,6 +40,7 @@ public class Server {
         userService = new UserService(dataAccess);
         gameService = new GameService(dataAccess);
         sessions = new HashMap<>();
+        reverseSessions = new HashMap<>();
     }
 
     public Integer run(int desiredPort) {
@@ -54,16 +58,42 @@ public class Server {
         Spark.awaitStop();
     }
 
+    @OnWebSocketClose
+    public void cleanWebSocketSessions(Session session, int exitCode, String reason) {
+        var games = reverseSessions.get(session);
+        if (games == null) {
+            return;
+        }
+
+        for (int gameID : games) {
+            var currentSessionsSet = sessions.get(gameID);
+            if (currentSessionsSet == null) {
+                continue;
+            }
+
+            currentSessionsSet.remove(session);
+            if (currentSessionsSet.isEmpty()) {
+                sessions.remove(gameID);
+            }
+        }
+
+        reverseSessions.remove(session);
+        System.out.println(reason);
+    }
+
     @OnWebSocketMessage
     public void onMessage(Session session, String message) throws IOException {
         try {
             var command = serializer.fromJson(message, UserGameCommand.class);
+            var game = findGame(command.getAuthToken(), command.getGameID());
+            String user = userService.getUsername(command.getAuthToken());
+            ChessGame.TeamColor teamColor = getTeamColor(user, game);
 
             switch (command.getCommandType()) {
-                case CONNECT -> connect(session, (ConnectCommand) command);
-                case MAKE_MOVE -> makeMove(session, (MakeMoveCommand) command);
-                case LEAVE -> leaveGame(session, (LeaveGameCommand) command);
-                case RESIGN -> resign(session, (ResignCommand) command);
+                case CONNECT -> connect(session, command, user, teamColor, game);
+                case MAKE_MOVE -> makeMove(session, command, user, teamColor);
+                case LEAVE -> leaveGame(session, command, user, teamColor);
+                case RESIGN -> resign(session, command, user, teamColor);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -71,27 +101,14 @@ public class Server {
         }
     }
 
-    private void sendServerMessage(Session session, ServerMessage message) throws IOException {
-        session.getRemote().sendString(serializer.toJson(message));
-    }
-
-    private void connect(Session session, ConnectCommand command)
-            throws AuthorizationException, DataAccessException, IOException {
-        var currentSessions = addSessionToGame(session, command.getGameID());
-        sendConnectMessages(session, command, currentSessions,
-                findGame(command.getAuthToken(), command.getGameID()));
-    }
-
-    private HashSet<Session> addSessionToGame(Session session, int gameID) {
-        var currentSessions = sessions.get(gameID);
-
-        if (currentSessions == null) {
-            currentSessions = new HashSet<>();
+    private ChessGame.TeamColor getTeamColor(String user, GameData game) {
+        ChessGame.TeamColor teamColor = null;
+        if (user.equals(game.whiteUsername())) {
+            teamColor = ChessGame.TeamColor.WHITE;
+        } else if (user.equals(game.blackUsername())) {
+            teamColor = ChessGame.TeamColor.BLACK;
         }
-
-        currentSessions.add(session);
-        sessions.put(gameID, currentSessions);
-        return currentSessions;
+        return teamColor;
     }
 
     private GameData findGame(String authToken, int gameID)
@@ -104,19 +121,52 @@ public class Server {
         return game;
     }
 
-    private void sendConnectMessages(Session rootSession, ConnectCommand command,
-            HashSet<Session> currentSessions, GameData game) throws IOException {
+    private void sendServerMessage(Session session, ServerMessage message) throws IOException {
+        session.getRemote().sendString(serializer.toJson(message));
+    }
 
-        var teamColor = command.getTeamColor();
+    private void connect(Session session, UserGameCommand command, String username,
+            ChessGame.TeamColor teamColor, GameData game)
+            throws AuthorizationException, DataAccessException, IOException {
+
+        var currentSessions = addSessionToGame(session, command.getGameID());
+        sendConnectMessages(session, currentSessions, command, username, teamColor, game);
+    }
+
+    private HashSet<Session> addSessionToGame(Session session, int gameID) {
+        var currentSessions = sessions.get(gameID);
+        var currentGames = reverseSessions.get(session);
+
+        if (currentSessions == null) {
+            currentSessions = new HashSet<>();
+        }
+
+        currentSessions.add(session);
+        sessions.put(gameID, currentSessions);
+
+        if (currentGames == null) {
+            currentGames = new HashSet<>();
+        }
+
+        currentGames.add(gameID);
+        reverseSessions.put(session, currentGames);
+
+        return currentSessions;
+    }
+
+    private void sendConnectMessages(Session rootSession, HashSet<Session> currentSessions,
+            UserGameCommand command, String username, ChessGame.TeamColor teamColor, GameData game)
+            throws IOException {
+
         sendServerMessage(rootSession, new LoadGameMessage(game.game(), teamColor));
 
         for (var ses : currentSessions) {
-            if (ses == rootSession) {
+            if (ses.equals(rootSession)) {
                 continue;
             }
 
             StringBuilder message = new StringBuilder();
-            message.append(command.getUsername()).append(" has joined as ");
+            message.append(username).append(" has joined as ");
             if (teamColor == null) {
                 message.append("an observer");
             } else {
@@ -127,15 +177,42 @@ public class Server {
         }
     }
 
-    private void makeMove(Session rootSession, MakeMoveCommand command) {
+    private void makeMove(Session rootSession, UserGameCommand command, String username,
+            ChessGame.TeamColor teamColor) {
 
     }
 
-    private void leaveGame(Session rootSession, LeaveGameCommand command) {
+    private void leaveGame(Session rootSession, UserGameCommand command, String username,
+            ChessGame.TeamColor teamColor) throws Exception {
+        int gameID = command.getGameID();
+        var currentSessions = sessions.get(gameID);
 
+        if (currentSessions == null || !currentSessions.contains(rootSession)) {
+            throw new NullPointerException("the game ID does not match the current session");
+        }
+
+        if (teamColor != null) {
+            gameService.leaveGame(gameID, command.getAuthToken(), teamColor);
+        }
+
+        String message = username + " has left the game";
+        cleanWebSocketSessions(rootSession, 0, message);
+        sendLeaveMessages(rootSession, command, currentSessions, message);
     }
 
-    private void resign(Session rootSession, ResignCommand command) {
+    private void sendLeaveMessages(Session rootSession, UserGameCommand command,
+            HashSet<Session> currentSessions, String message) throws IOException {
+        for (var ses : currentSessions) {
+            if (ses.equals(rootSession)) {
+                continue;
+            }
+
+            sendServerMessage(ses, new NotificationMessage(message));
+        }
+    }
+
+    private void resign(Session rootSession, UserGameCommand command, String username,
+            ChessGame.TeamColor teamColor) {
 
     }
 
