@@ -95,7 +95,7 @@ public class Server {
                 case CONNECT -> connect(session, command, user, teamColor, game);
                 case MAKE_MOVE -> makeMove(session, command, user, teamColor, game);
                 case LEAVE -> leaveGame(session, command, user, teamColor);
-                case RESIGN -> resign(session, command, user, teamColor);
+                case RESIGN -> resign(session, command, user, teamColor, game);
             }
         } catch (Exception ex) {
             ex.printStackTrace();
@@ -181,15 +181,15 @@ public class Server {
 
     private void makeMove(Session rootSession, UserGameCommand command, String username,
             ChessGame.TeamColor teamColor, GameData gameData) throws Exception {
-        if (teamColor == null) {
-            throw new Exception("observers cannot make moves");
-        }
+
+        assertNotObserver(teamColor, "observers cannot make moves");
 
         int gameID = command.getGameID();
-        var currentSessions = sessions.get(gameID);
+        HashSet<Session> currentSessions = sessions.get(gameID);
         verifySession(rootSession, currentSessions);
 
-        var userGame = gameData.game();
+        ChessGame userGame = gameData.game();
+        assertPlayable(userGame);
         verifyTurn(teamColor, userGame);
 
         userGame.makeMove(command.getMove());
@@ -197,6 +197,12 @@ public class Server {
 
         sendMakeMoveMessages(rootSession, currentSessions, username, command.getMove(), userGame,
                 gameData);
+    }
+
+    private void assertNotObserver(ChessGame.TeamColor teamColor, String message) throws Exception {
+        if (teamColor == null) {
+            throw new Exception(message);
+        }
     }
 
     private void verifySession(Session rootSession, HashSet<Session> currentSessions) {
@@ -249,7 +255,6 @@ public class Server {
     }
 
     private String parseMove(ChessMove move, String username) {
-
         var builder = new StringBuilder();
         builder.append(username).append(" has moved from ");
         builder.append(columns.get(move.getStartPosition().getColumn()));
@@ -266,8 +271,6 @@ public class Server {
         return builder.toString();
     }
 
-
-
     private void leaveGame(Session rootSession, UserGameCommand command, String username,
             ChessGame.TeamColor teamColor) throws Exception {
         int gameID = command.getGameID();
@@ -280,11 +283,11 @@ public class Server {
 
         String message = username + " has left the game";
         cleanWebSocketSessions(rootSession, 0, message);
-        sendLeaveMessages(rootSession, command, currentSessions, message);
+        sendLeaveMessages(rootSession, currentSessions, message);
     }
 
-    private void sendLeaveMessages(Session rootSession, UserGameCommand command,
-            HashSet<Session> currentSessions, String message) throws IOException {
+    private void sendLeaveMessages(Session rootSession, HashSet<Session> currentSessions,
+            String message) throws IOException {
         for (var ses : currentSessions) {
             if (ses.equals(rootSession)) {
                 continue;
@@ -295,8 +298,34 @@ public class Server {
     }
 
     private void resign(Session rootSession, UserGameCommand command, String username,
-            ChessGame.TeamColor teamColor) {
+            ChessGame.TeamColor teamColor, GameData data) throws Exception {
 
+        int gameID = command.getGameID();
+        var currentSessions = sessions.get(gameID);
+        verifySession(rootSession, currentSessions);
+        assertNotObserver(teamColor, "observers cannot resign");
+
+        var game = data.game();
+        assertPlayable(game);
+
+        game.setPlayable(false);
+        gameService.saveGame(command.getGameID(), command.getAuthToken(), game);
+
+        String message = username + " has resigned";
+        sendResignMessages(rootSession, currentSessions, message);
+    }
+
+    private void assertPlayable(ChessGame game) throws Exception {
+        if (!game.getPlayable()) {
+            throw new Exception("the game can no longer be played");
+        }
+    }
+
+    private void sendResignMessages(Session rootSession, HashSet<Session> currentSessions,
+            String message) throws IOException {
+        for (var ses : currentSessions) {
+            sendServerMessage(ses, new NotificationMessage(message));
+        }
     }
 
     private void createRoutes() {

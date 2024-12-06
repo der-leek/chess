@@ -640,11 +640,20 @@ public class Client implements ServerMessageObserver {
     }
 
     private void resign(int gameID) {
-        // System.out.print("Are you sure you want to resign? (y/n) ");
-        // String line = scanner.nextLine().trim();
-        // System.out.println();
+        System.out.print("Are you sure you want to resign? (y/n) ");
+        String line = scanner.nextLine().trim();
+        System.out.println();
 
-        // send RESIGN request via websocket
+        if (!line.equals("y")) {
+            return;
+        }
+
+        try {
+            ws.send(new UserGameCommand(CommandType.RESIGN, authToken, gameID));
+        } catch (Exception ex) {
+            printBoldItalic(ex.getMessage());
+            return;
+        }
     }
 
     private void highlightMoves() {

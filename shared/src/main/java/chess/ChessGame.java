@@ -13,28 +13,46 @@ public class ChessGame implements Cloneable {
     private ChessBoard board;
     private TeamColor teamTurn;
     private TeamPositions teamPositions;
+    private boolean playable;
 
     public ChessGame() {
         board = new ChessBoard();
         board.resetBoard();
         teamPositions = new TeamPositions(board);
         setTeamTurn(TeamColor.WHITE);
+        playable = true;
     }
 
     /**
-     * @return Which team's turn it is
+     * @return which team's turn it is
      */
     public TeamColor getTeamTurn() {
         return teamTurn;
     }
 
     /**
-     * Set's which teams turn it is
+     * Sets which teams turn it is
      *
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
         teamTurn = team;
+    }
+
+    /**
+     * @return whether the game can still be played
+     */
+    public boolean getPlayable() {
+        return playable;
+    }
+
+    /**
+     * Sets the game as playable or not
+     *
+     * @param playable
+     */
+    public void setPlayable(boolean playable) {
+        this.playable = playable;
     }
 
     /**
@@ -122,6 +140,14 @@ public class ChessGame implements Cloneable {
         teamPositions.refreshPositions(board);
     }
 
+    /**
+     * Validates the given move
+     *
+     * @param move
+     * @param startPosition
+     * @param piece
+     * @throws InvalidMoveException
+     */
     private void validateMove(ChessMove move, ChessPosition startPosition, ChessPiece piece)
             throws InvalidMoveException {
         if (piece == null) {
