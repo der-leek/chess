@@ -14,11 +14,11 @@ import server.ServerFacade;
 import server.ServerMessageObserver;
 import server.WebSocketCommunicator;
 import websocket.commands.*;
+import websocket.commands.UserGameCommand.CommandType;
 import websocket.messages.*;
 
 public class Client implements ServerMessageObserver {
     public static void main(String[] args) throws Exception {
-        System.out.println();
         System.out.print(EscapeSequences.SET_BOLD_ITALIC);
         System.out.println("Welcome to CS240 Chess!");
         System.out.print(EscapeSequences.RESET_BOLD_ITALIC);
@@ -53,6 +53,9 @@ public class Client implements ServerMessageObserver {
     private final Serializer serializer = new Serializer();
     private final Map<Character, Integer> columns =
             Map.of('a', 1, 'b', 2, 'c', 3, 'd', 4, 'e', 5, 'f', 6, 'g', 7, 'h', 8);
+    private final Map<Integer, ChessPiece.PieceType> promotions = Map.of(1,
+            ChessPiece.PieceType.PAWN, 2, ChessPiece.PieceType.KNIGHT, 3, ChessPiece.PieceType.ROOK,
+            4, ChessPiece.PieceType.BISHOP, 5, ChessPiece.PieceType.QUEEN);
 
     public Client(Scanner scanner) throws Exception {
         int port = 8080;
@@ -419,7 +422,7 @@ public class Client implements ServerMessageObserver {
         }
 
         try {
-            ws.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
+            ws.send(new UserGameCommand(CommandType.CONNECT, authToken, gameID));
         } catch (Exception ex) {
             printBoldItalic(ex.getMessage());
             return;
@@ -502,7 +505,7 @@ public class Client implements ServerMessageObserver {
                 case "1" -> printGameplayHelp();
                 case "2" -> renderBoard(chessGame.getBoard(), teamColor);
                 case "3" -> leaveGame(gameID);
-                case "4" -> makeMove();
+                case "4" -> makeMove(gameID);
                 case "5" -> resign(gameID);
                 case "6" -> highlightMoves();
                 case "clear" -> clearDB();
@@ -534,7 +537,7 @@ public class Client implements ServerMessageObserver {
 
     private void leaveGame(int gameID) {
         try {
-            ws.send(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
+            ws.send(new UserGameCommand(CommandType.LEAVE, authToken, gameID));
         } catch (Exception ex) {
             printBoldItalic(ex.getMessage());
             return;
@@ -543,9 +546,63 @@ public class Client implements ServerMessageObserver {
         gameInProgress = false;
     }
 
-    private void makeMove() {
-        // convert moves into ChessPositions
-        // send MAKE MOVE request via websocket
+    private void makeMove(int gameID) {
+        System.out.print("Starting position: ");
+        var startingPosition = getSelectedPosition();
+
+        System.out.print("Ending position: ");
+        var endingPosition = getSelectedPosition();
+
+        var move = new ChessMove(startingPosition, endingPosition,
+                determinePromotion(startingPosition, endingPosition));
+
+        try {
+            ws.send(new UserGameCommand(CommandType.MAKE_MOVE, authToken, gameID, move));
+        } catch (Exception ex) {
+            printBoldItalic(ex.getMessage());
+        }
+    }
+
+    private ChessPiece.PieceType determinePromotion(ChessPosition startingPosition,
+            ChessPosition endingPosition) {
+        var piece = chessGame.getBoard().getPiece(startingPosition);
+        if (piece == null) {
+            return null;
+        } else if (piece.getPieceType() != ChessPiece.PieceType.PAWN) {
+            return null;
+        } else if (endingPosition.getRow() != 1 || endingPosition.getRow() != 8) {
+            return null;
+        }
+
+        return getPromotionPiece();
+    }
+
+    private ChessPiece.PieceType getPromotionPiece() {
+        System.out.println("Select a promotion piece:");
+        System.out.println("1: Pawn");
+        System.out.println("2: Knight");
+        System.out.println("3: Rook");
+        System.out.println("4: Bishop");
+        System.out.print("5: Queen\n>>> ");
+
+        return validatePromotion();
+    }
+
+    private ChessPiece.PieceType validatePromotion() {
+        String line;
+        int piece = 0;
+
+        while (piece > 0 || piece < 6) {
+            line = scanner.nextLine().trim();
+            try {
+                piece = Integer.parseInt(line);
+            } catch (NumberFormatException ex) {
+                System.out.print("Invalid piece. Try again: ");
+                piece = 0;
+            }
+        }
+
+        return promotions.get(piece);
     }
 
     private ChessPosition getSelectedPosition() {
@@ -607,7 +664,7 @@ public class Client implements ServerMessageObserver {
         Integer gameID = getGameID();
 
         try {
-            ws.send(new UserGameCommand(UserGameCommand.CommandType.CONNECT, authToken, gameID));
+            ws.send(new UserGameCommand(CommandType.CONNECT, authToken, gameID));
         } catch (Exception ex) {
             printBoldItalic(ex.getMessage());
             return;

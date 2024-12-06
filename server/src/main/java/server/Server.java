@@ -78,7 +78,7 @@ public class Server {
         }
 
         reverseSessions.remove(session);
-        System.out.println(reason);
+        System.out.printf("%s: %s\n", session.getRemote().toString(), reason);
     }
 
     @OnWebSocketMessage
