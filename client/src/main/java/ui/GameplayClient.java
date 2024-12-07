@@ -91,7 +91,7 @@ public class GameplayClient implements ServerMessageObserver {
         this.teamColor = teamColor;
         connect(gameID, authToken);
 
-        while (chessGame != null) {
+        do {
             System.out.println();
             printGameplayMenu();
             String line = scanner.nextLine().trim();
@@ -105,7 +105,7 @@ public class GameplayClient implements ServerMessageObserver {
                 case "5" -> resign(gameID);
                 case "6" -> highlightMoves();
             }
-        }
+        } while (chessGame != null);
     }
 
     private void connect(int gameID, String authToken) {
@@ -114,19 +114,13 @@ public class GameplayClient implements ServerMessageObserver {
         } catch (Exception ex) {
             MessagePrinter.printBoldItalic(ex.getMessage());
         }
-
-        try { // this allows server response before code continues
-            Thread.sleep(150);
-        } catch (InterruptedException e) {
-            return;
-        }
     }
 
     public void runObserveMenu(int gameID, String authToken) {
         this.authToken = authToken;
         connect(gameID, authToken);
 
-        while (chessGame != null) {
+        do {
             System.out.println();
             printObserveMenu();
             String line = scanner.nextLine().trim();
@@ -138,7 +132,7 @@ public class GameplayClient implements ServerMessageObserver {
                 case "3" -> leaveGame(gameID);
                 case "4" -> highlightMoves();
             }
-        }
+        } while (chessGame != null);
     }
 
     private void printGameplayMenu() {
@@ -223,9 +217,9 @@ public class GameplayClient implements ServerMessageObserver {
 
     private ChessPiece.PieceType validatePromotion() {
         String line;
-        int piece = 0;
+        int piece;
 
-        while (piece > 0 || piece < 6) {
+        do {
             line = scanner.nextLine().trim();
             try {
                 piece = Integer.parseInt(line);
@@ -233,18 +227,18 @@ public class GameplayClient implements ServerMessageObserver {
                 System.out.print("Invalid piece. Try again: ");
                 piece = 0;
             }
-        }
+        } while (piece > 0 || piece < 6);
 
         return promotions.get(piece);
     }
 
     private ChessPosition getSelectedPosition() {
         String line;
-        Object row = null;
-        int col = 0;;
+        Object row;
+        int col;
+        boolean invalidPosition;
 
-        boolean invalidPosition = true;
-        while (invalidPosition) {
+        do {
             line = scanner.nextLine().trim();
             col = columns.get(line.charAt(0));
             row = parseRow(line);
@@ -253,7 +247,7 @@ public class GameplayClient implements ServerMessageObserver {
             if (invalidPosition) {
                 System.out.print("Invalid position. Try again: ");
             }
-        }
+        } while (invalidPosition);
 
         var selectedPosition = new ChessPosition((Integer) row, col);
         return selectedPosition;

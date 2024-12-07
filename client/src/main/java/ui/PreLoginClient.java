@@ -16,7 +16,6 @@ public class PreLoginClient {
     public PreLoginClient(Scanner scanner, ServerFacade serverFacade) throws Exception {
         this.scanner = scanner;
         this.serverFacade = serverFacade;
-        runMenu();
     }
 
     public Login runMenu() {
@@ -47,8 +46,7 @@ public class PreLoginClient {
     private void clearDB() {
         var result = serverFacade.clear();
         if (result == null) {
-            MessagePrinter.printBoldItalic("Remember to start the server!");
-            return;
+            throw new RuntimeException("Remember to start the server!");
         }
 
         if (result.get("statusCode").equals("200")) {
@@ -67,13 +65,11 @@ public class PreLoginClient {
         var response = serverFacade.register(user, password, email);
 
         if (response == null) {
-            MessagePrinter.printBoldItalic("There was an error registering. Please try again.");
-            return;
+            throw new RuntimeException("There was an error registering. Please try again.");
         }
 
         if (!response.get("statusCode").equals("200")) {
-            MessagePrinter.printBoldItalic("Invalid username. Please try another.");
-            return;
+            throw new RuntimeException("Invalid username. Please try another.");
         }
 
         getAuthToken(response);
@@ -108,19 +104,16 @@ public class PreLoginClient {
         String tryAgain = "There was an error logging in. Please try again.";
 
         if (response == null) {
-            MessagePrinter.printBoldItalic(tryAgain);
-            return;
+            throw new RuntimeException(tryAgain);
         }
 
         var statusCode = response.get("statusCode");
         if (statusCode.equals("500")) {
-            MessagePrinter.printBoldItalic(tryAgain);
-            return;
+            throw new RuntimeException(tryAgain);
         }
 
         if (statusCode.equals("401")) {
-            MessagePrinter.printBoldItalic("Invalid credentials. Please try again.");
-            return;
+            throw new RuntimeException("Invalid credentials. Please try again.");
         }
 
         getAuthToken(response);

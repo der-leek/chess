@@ -16,17 +16,24 @@ public class Main {
     private static void runClient(Scanner scanner) throws Exception {
         int port = 8080;
         var sf = new ServerFacade(port);
-
         var preClient = new PreLoginClient(scanner, sf);
         var postClient = new PostLoginClient(scanner, sf, port);
-
         Login auth = new Login(null, null);
+
         while (true) {
             if (auth.username() == null) {
-                
-                auth = preClient.runMenu();
+                try {
+                    auth = preClient.runMenu();
+                } catch (RuntimeException ex) {
+                    MessagePrinter.printBoldItalic(ex.getMessage());
+                    auth = new Login(null, null);
+                }
             } else {
-                auth = postClient.runMenu(auth);
+                try {
+                    auth = postClient.runMenu(auth);
+                } catch (RuntimeException ex) {
+                    MessagePrinter.printBoldItalic(ex.getMessage());
+                }
             }
         }
     }

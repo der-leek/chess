@@ -76,10 +76,7 @@ public class PostLoginClient {
     }
 
     private void logout() {
-        if (authToken == null) {
-            return;
-        }
-
+        assertAuthTokenNotNull();
         var response = serverFacade.logout(authToken);
 
         while (response == null) {
@@ -88,18 +85,21 @@ public class PostLoginClient {
         }
 
         if (!response.get("statusCode").equals("200")) {
-            MessagePrinter.printBoldItalic("There was an error logging out. Try again.");
-            return;
+            throw new RuntimeException("There was an error logging out. Try again.");
         }
 
         user = null;
         authToken = null;
     }
 
-    private void createGame() {
+    private void assertAuthTokenNotNull() {
         if (authToken == null) {
-            return;
+            throw new RuntimeException();
         }
+    }
+
+    private void createGame() {
+        assertAuthTokenNotNull();
 
         String gameName = getGameName();
         var response = serverFacade.createGame(gameName, authToken);
@@ -124,9 +124,7 @@ public class PostLoginClient {
     }
 
     private void listGames(boolean shouldPrint) {
-        if (authToken == null) {
-            return;
-        }
+        assertAuthTokenNotNull();
 
         ArrayList<GameData> games = retrieveGames();
         if (games == null || games.isEmpty()) {
@@ -176,14 +174,8 @@ public class PostLoginClient {
     }
 
     private void playGame() {
-        if (authToken == null) {
-            return;
-        }
-
-        if (dbGames.isEmpty()) {
-            MessagePrinter.printBoldItalic("There are no games. Start by creating one.");
-            return;
-        }
+        assertAuthTokenNotNull();
+        assertDBGamesNotEmpty();
 
         Integer gameID = getGameID();
         getColor();
@@ -196,6 +188,12 @@ public class PostLoginClient {
         }
 
         gameClient.runGameplayMenu(gameID, teamColor, authToken);
+    }
+
+    private void assertDBGamesNotEmpty() {
+        if (dbGames.isEmpty()) {
+            throw new RuntimeException("There are no games. Start by creating one.");
+        }
     }
 
     private void validateJoinResponse(Map<String, String> response) throws Exception {
@@ -214,14 +212,8 @@ public class PostLoginClient {
     }
 
     private void observeGame() {
-        if (authToken == null) {
-            return;
-        }
-
-        if (dbGames.isEmpty()) {
-            MessagePrinter.printBoldItalic("There are no games. Start by creating one.");
-            return;
-        }
+        assertAuthTokenNotNull();
+        assertDBGamesNotEmpty();
 
         gameClient.runObserveMenu(getGameID(), authToken);
     }
@@ -229,17 +221,16 @@ public class PostLoginClient {
     private Integer getGameID() {
         System.out.print("Game ID: ");
         String gameID;
-        Integer id = null;
+        Integer id;
 
-        while (id == null) {
+        do {
             gameID = scanner.nextLine().trim();
-
             id = parseGameID(gameID);
 
             if (id == null) {
                 System.out.print("Please enter a valid game ID: ");
             }
-        }
+        } while (id == null);
 
         return id;
     }

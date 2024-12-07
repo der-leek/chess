@@ -54,15 +54,15 @@ public class BoardRenderer {
 
         int i = (reversed ? 1 : boardSize);
         int step = (reversed ? 1 : -1);
-        boolean condition = true;
+        boolean condition;
 
-        while (condition) {
+        do {
             drawRow(i, EscapeSequences.SET_BG_COLOR_WHITE, EscapeSequences.SET_BG_COLOR_BLACK);
             i += step;
             drawRow(i, EscapeSequences.SET_BG_COLOR_BLACK, EscapeSequences.SET_BG_COLOR_WHITE);
             i += step;
             condition = (reversed ? i <= boardSize : i > 0);
-        }
+        } while (condition);
 
         drawHeader();
         out.print(EscapeSequences.RESET_TEXT_BOLD_FAINT);
@@ -88,13 +88,13 @@ public class BoardRenderer {
 
         int i = (reversed ? boardSize - 1 : 0);
         int step = (reversed ? -1 : 1);
-        boolean condition = true;
+        boolean condition;
 
-        while (condition) {
+        do {
             out.printf(" %s ", columns[i]);
             i += step;
             condition = (reversed ? i >= 0 : i < boardSize);
-        }
+        } while (condition);
 
         out.print(EscapeSequences.EMPTY);
         out.print(EscapeSequences.RESET_BG_COLOR);
@@ -107,15 +107,15 @@ public class BoardRenderer {
 
         int i = (reversed ? boardSize : 1);
         int step = (reversed ? -1 : 1);
-        boolean condition = true;
+        boolean condition;
 
-        while (condition) {
+        do {
             drawSquare(i, index, startColor);
             i += step;
             drawSquare(i, index, endColor);
             i += step;
             condition = (reversed ? i > 0 : i <= boardSize);
-        }
+        } while (condition);
 
         out.print(EscapeSequences.RESET_TEXT_COLOR);
         out.print(EscapeSequences.RESET_TEXT_ITALIC);
