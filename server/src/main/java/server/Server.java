@@ -18,6 +18,7 @@ import com.google.gson.JsonSyntaxException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
+import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 
 @WebSocket
@@ -58,6 +59,11 @@ public class Server {
     public void stop() {
         Spark.stop();
         Spark.awaitStop();
+    }
+
+    @OnWebSocketConnect
+    public void onConnect(Session session) {
+        session.setIdleTimeout(120000);
     }
 
     @OnWebSocketClose
@@ -124,6 +130,7 @@ public class Server {
     }
 
     private void sendServerMessage(Session session, ServerMessage message) throws IOException {
+        System.out.println(message);
         session.getRemote().sendString(serializer.toJson(message));
     }
 
@@ -266,7 +273,6 @@ public class Server {
             builder.append(" and promoted to a ");
             builder.append(move.getPromotionPiece().toString().toLowerCase());
         }
-        builder.append(".");
 
         return builder.toString();
     }

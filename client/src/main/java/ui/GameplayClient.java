@@ -234,16 +234,16 @@ public class GameplayClient implements ServerMessageObserver {
 
     private ChessPosition getSelectedPosition() {
         String line;
-        Object row;
+        int row;
         int col;
         boolean invalidPosition;
 
         do {
             line = scanner.nextLine().trim();
-            col = columns.get(line.charAt(0));
+            col = columns.getOrDefault(line.charAt(0), 0);
             row = parseRow(line);
 
-            invalidPosition = (row == null || col < 1 || col > 8);
+            invalidPosition = (row < 1 || row > 8 || col < 1 || col > 8);
             if (invalidPosition) {
                 System.out.print("Invalid position. Try again: ");
             }
