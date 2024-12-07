@@ -18,7 +18,7 @@ public class BoardRenderer {
 
     private final PrintStream out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
     private final String[] columns = {"a", "b", "c", "d", "e", "f", "g", "h"};
-    private final int BOARD_SIZE = 8;
+    private final int boardSize = 8;
 
     private boolean reversed;
     private ChessBoard board;
@@ -52,7 +52,7 @@ public class BoardRenderer {
         out.print(EscapeSequences.SET_TEXT_BOLD);
         drawHeader();
 
-        int i = (reversed ? 1 : BOARD_SIZE);
+        int i = (reversed ? 1 : boardSize);
         int step = (reversed ? 1 : -1);
         boolean condition = true;
 
@@ -61,7 +61,7 @@ public class BoardRenderer {
             i += step;
             drawRow(i, EscapeSequences.SET_BG_COLOR_BLACK, EscapeSequences.SET_BG_COLOR_WHITE);
             i += step;
-            condition = (reversed ? i <= BOARD_SIZE : i > 0);
+            condition = (reversed ? i <= boardSize : i > 0);
         }
 
         drawHeader();
@@ -86,14 +86,14 @@ public class BoardRenderer {
         out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY);
         out.print(EscapeSequences.EMPTY);
 
-        int i = (reversed ? BOARD_SIZE - 1 : 0);
+        int i = (reversed ? boardSize - 1 : 0);
         int step = (reversed ? -1 : 1);
         boolean condition = true;
 
         while (condition) {
             out.printf(" %s ", columns[i]);
             i += step;
-            condition = (reversed ? i >= 0 : i < BOARD_SIZE);
+            condition = (reversed ? i >= 0 : i < boardSize);
         }
 
         out.print(EscapeSequences.EMPTY);
@@ -105,7 +105,7 @@ public class BoardRenderer {
         out.print(EscapeSequences.SET_BG_COLOR_DARK_GREY);
         out.printf(" %s ", index);
 
-        int i = (reversed ? BOARD_SIZE : 1);
+        int i = (reversed ? boardSize : 1);
         int step = (reversed ? -1 : 1);
         boolean condition = true;
 
@@ -114,7 +114,7 @@ public class BoardRenderer {
             i += step;
             drawSquare(i, index, endColor);
             i += step;
-            condition = (reversed ? i > 0 : i <= BOARD_SIZE);
+            condition = (reversed ? i > 0 : i <= boardSize);
         }
 
         out.print(EscapeSequences.RESET_TEXT_COLOR);
