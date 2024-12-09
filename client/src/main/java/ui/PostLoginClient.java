@@ -29,7 +29,7 @@ public class PostLoginClient {
         dbGames = new HashMap<>();
     }
 
-    public Login runMenu(Login credentials) {
+    public Login runMenu(Login credentials) throws Exception {
         this.user = credentials.username();
         this.authToken = credentials.authToken();
         listGames(false);
@@ -79,12 +79,7 @@ public class PostLoginClient {
         assertAuthTokenNotNull();
         var response = serverFacade.logout(authToken);
 
-        while (response == null) {
-            MessagePrinter.printBoldItalic("There was an error logging out. Trying again...");
-            response = serverFacade.logout(authToken);
-        }
-
-        if (!response.get("statusCode").equals("200")) {
+        if (response == null || !response.get("statusCode").equals("200")) {
             throw new RuntimeException("There was an error logging out. Try again.");
         }
 
@@ -106,12 +101,12 @@ public class PostLoginClient {
         String tryAgain = "An error occurred while creating that game. Please try again";
 
         if (response == null) {
-            MessagePrinter.printBoldItalic(tryAgain);
+            throw new RuntimeException(tryAgain);
         }
 
         var statusCode = response.get("statusCode");
         if (!statusCode.equals("200")) {
-            MessagePrinter.printBoldItalic(tryAgain);
+            throw new RuntimeException(tryAgain);
         }
 
         listGames(true);
@@ -129,7 +124,7 @@ public class PostLoginClient {
         ArrayList<GameData> games = retrieveGames();
         if (games == null || games.isEmpty()) {
             if (shouldPrint) {
-                MessagePrinter.printBoldItalic("There are no games. Start by creating one.");
+                throw new RuntimeException("There are no games. Start by creating one.");
             }
         }
 
@@ -141,14 +136,12 @@ public class PostLoginClient {
         String tryAgain = "An error occurred while listing games. Please try again.";
 
         if (response == null) {
-            MessagePrinter.printBoldItalic(tryAgain);
-            return null;
+            throw new RuntimeException(tryAgain);
         }
 
         var statusCode = response.get("statusCode");
         if (!statusCode.equals("200")) {
-            MessagePrinter.printBoldItalic(tryAgain);
-            return null;
+            throw new RuntimeException(tryAgain);
         }
 
         Type type = new TypeToken<Map<String, ArrayList<GameData>>>() {}.getType();
@@ -173,19 +166,15 @@ public class PostLoginClient {
         System.out.printf(" Black Player: %s\n", game.blackUsername());
     }
 
-    private void playGame() {
+    private void playGame() throws Exception {
         assertAuthTokenNotNull();
         assertDBGamesNotEmpty();
 
         Integer gameID = getGameID();
         getColor();
 
-        try {
-            var joinResponse = serverFacade.joinGame(gameID, teamColor, authToken);
-            validateJoinResponse(joinResponse);
-        } catch (Exception ex) {
-            MessagePrinter.printBoldItalic(ex.getMessage());
-        }
+        var joinResponse = serverFacade.joinGame(gameID, teamColor, authToken);
+        validateJoinResponse(joinResponse);
 
         gameClient.runGameplayMenu(gameID, teamColor, authToken);
     }
@@ -200,14 +189,15 @@ public class PostLoginClient {
         String tryAgain = "An error occurred while joining that game. Please try again.";
 
         if (response == null) {
-            throw new Exception(tryAgain);
+            throw new RuntimeException(tryAgain);
         }
 
         var statusCode = response.get("statusCode");
         if (statusCode.equals("403")) {
-            throw new Exception("Another user has joined as that color already. Please try again.");
+            throw new RuntimeException(
+                    "Another user has joined as that color already. Please try again.");
         } else if (!statusCode.equals("200")) {
-            throw new Exception(tryAgain);
+            throw new RuntimeException(tryAgain);
         }
     }
 
