@@ -247,10 +247,10 @@ public class Server {
 
         String message = null;
         for (int i = 0; i < teams.length && message == null; i++) {
-            if (game.isInCheck(teams[i])) {
-                message = usernames[i] + statuses[0];
-            } else if (game.isInCheckmate(teams[i])) {
+            if (game.isInCheckmate(teams[i])) {
                 message = usernames[i] + statuses[1];
+            } else if (game.isInCheck(teams[i])) {
+                message = usernames[i] + statuses[0];
             } else if (game.isInStalemate(teams[i])) {
                 message = usernames[i] + statuses[2];
             }
