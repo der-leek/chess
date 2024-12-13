@@ -169,6 +169,7 @@ public class PostLoginClient {
     private void playGame() throws Exception {
         assertAuthTokenNotNull();
         assertDBGamesNotEmpty();
+        listGames(false);
 
         Integer gameID = getGameID();
         getColor();

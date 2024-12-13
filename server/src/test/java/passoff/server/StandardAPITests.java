@@ -262,7 +262,6 @@ public class StandardAPITests {
     public void badGameIDJoin() {
         //create game
         createRequest = new TestCreateRequest("Bad Join");
-        TestCreateResult createResult = serverFacade.createGame(createRequest, existingAuth);
 
         //try join as white
         TestJoinRequest joinRequest = new TestJoinRequest(ChessGame.TeamColor.WHITE, null);

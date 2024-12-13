@@ -197,7 +197,7 @@ public class GameplayClient implements ServerMessageObserver {
             return null;
         } else if (piece.getPieceType() != ChessPiece.PieceType.PAWN) {
             return null;
-        } else if (endingPosition.getRow() != 1 || endingPosition.getRow() != 8) {
+        } else if (endingPosition.getRow() != 1 && endingPosition.getRow() != 8) {
             return null;
         }
 
@@ -223,11 +223,14 @@ public class GameplayClient implements ServerMessageObserver {
             line = scanner.nextLine().trim();
             try {
                 piece = Integer.parseInt(line);
+                if (piece < 1 || piece > 5) {
+                    throw new NumberFormatException();
+                }
             } catch (NumberFormatException ex) {
                 System.out.print("Invalid piece. Try again: ");
                 piece = 0;
             }
-        } while (piece > 0 || piece < 6);
+        } while (piece < 1 || piece > 5);
 
         return promotions.get(piece);
     }

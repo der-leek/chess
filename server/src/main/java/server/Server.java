@@ -63,11 +63,12 @@ public class Server {
 
     @OnWebSocketConnect
     public void onConnect(Session session) {
-        session.setIdleTimeout(120000);
+        session.setIdleTimeout(300000);
     }
 
     @OnWebSocketClose
-    public void cleanWebSocketSessions(Session session, int exitCode, String reason) {
+    public void cleanWebSocketSessions(Session session, int exitCode, String reason)
+            throws IOException {
         var games = reverseSessions.get(session);
         if (games == null) {
             return;
@@ -87,6 +88,8 @@ public class Server {
 
         reverseSessions.remove(session);
         System.out.printf("%s: %s\n", session.getRemote().toString(), reason);
+
+        sendServerMessage(session, new NotificationMessage(reason));
     }
 
     @OnWebSocketMessage
